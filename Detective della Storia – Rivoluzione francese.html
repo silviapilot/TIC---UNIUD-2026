@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Detective della Storia – Rivoluzione francese</title>
+<style>
+:root{--bg:#fff7e6;--card:#fff;--ink:#2b2350;--mut:#6b6490;--p:#6c4bff;--ok:#1fb86b;--bad:#ff5a5f;--y:#ffc93c;--b1:#ffe3b3;--b2:#d9f3ff;--b3:#e6dcff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1838;--card:#2a2552;--ink:#fff4dc;--mut:#b9b2e0;--b1:#5a4520;--b2:#1f4a5e;--b3:#43358a}}
+:root[data-theme="dark"]{--bg:#1c1838;--card:#2a2552;--ink:#fff4dc;--mut:#b9b2e0;--b1:#5a4520;--b2:#1f4a5e;--b3:#43358a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;font-size:17px;line-height:1.4}
+.w{max-width:860px;margin:0 auto;padding:16px}
+h1{margin:4px 0;font-size:1.7rem}
+.sub{color:var(--mut);margin:0 0 12px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{border:3px solid transparent;background:var(--card);color:var(--ink);border-radius:16px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.tab.on{border-color:var(--p);background:var(--p);color:#fff}
+.tab small{display:block;font-weight:400;font-size:.72rem}
+.box{background:var(--card);border-radius:20px;padding:16px;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.goal{background:var(--b3);border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:.95rem}
+.goal b{color:var(--p)}
+.cards{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.c{background:var(--b1);color:var(--ink);border:3px solid transparent;border-radius:14px;padding:9px 12px;font:inherit;cursor:pointer;text-align:left}
+.c.sel{border-color:var(--p);transform:scale(1.03)}
+.c.ok{background:var(--ok);color:#fff}.c.bad{background:var(--bad);color:#fff}
+.slot{display:flex;align-items:center;gap:8px;margin:6px 0}
+.n{flex:none;width:34px;height:34px;border-radius:50%;background:var(--y);color:#2b2350;font-weight:800;display:grid;place-items:center}
+.sl{flex:1;min-height:46px;border:3px dashed var(--mut);border-radius:14px;padding:8px 12px;cursor:pointer;background:transparent;color:var(--ink);font:inherit;text-align:left}
+.sl.f{border-style:solid;background:var(--b2)}
+.sl.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.sl.bad{background:var(--bad);color:#fff;border-color:var(--bad)}
+.arr{font-size:1.4rem;text-align:center;color:var(--p);margin:-2px 0}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+.row .t{background:var(--b2);border-radius:12px;padding:8px 10px;flex:1 1 150px}
+.row .sl{flex:1 1 170px}
+.cat{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.cat button{border:2px solid var(--p);background:transparent;color:var(--ink);border-radius:10px;padding:4px 8px;font:inherit;font-size:.85rem;cursor:pointer}
+.cat button.on{background:var(--p);color:#fff}
+.btn{background:var(--p);color:#fff;border:0;border-radius:14px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);margin:8px 8px 0 0}
+.btn.g{background:var(--mut)}
+.fb{margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--b2);min-height:20px}
+.opt{display:block;width:100%;margin:6px 0;text-align:left}
+textarea{width:100%;border-radius:12px;border:2px solid var(--mut);padding:8px;font:inherit;background:var(--card);color:var(--ink)}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:10px;font-size:.9rem}
+.map div{border-radius:12px;padding:8px}
+.stars{float:right;font-size:1.3rem}
+.map>div{cursor:pointer;min-height:70px}
+.lf{background:#fff;color:#2b2350;display:block;width:100%;margin-top:4px;padding:6px 8px;font-size:.88rem}
+.lf.ok{background:var(--ok);color:#fff}.lf.bad{background:var(--bad);color:#fff}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="stars" id="stars"></div>
+<h1>🕵️ Detective della Storia</h1>
+<p class="sub">Francia, 1789: scopri cosa è successo e <b>perché</b>! Scegli un livello.</p>
+<div class="tabs" id="tabs"></div>
+<div class="box" id="stage"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const sh=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+const LV=[
+{n:"Catena del tempo",e:"⛓️",s:"Facile",g:"Metti in ordine gli eventi: la causa viene sempre prima dell’effetto.",sk:"Ordine nel tempo"},
+{n:"Completa la mappa",e:"🧩",s:"Facile",g:"Trova la tessera giusta che collega ogni causa al suo effetto.",sk:"Collegare causa ed effetto"},
+{n:"Cacciatore di cause",e:"🗂️",s:"Medio",g:"Ogni causa ha un tipo: economica, sociale oppure politica/idee. Smistale!",sk:"Classificare le cause"},
+{n:"Caccia all’errore",e:"🔍",s:"Difficile",g:"Alcune frecce sono sbagliate! Trovale e scopri perché.",sk:"Controllare la direzione delle frecce"},
+{n:"E se…?",e:"🔮",s:"Esperto",g:"Cambia un pezzo della storia e prevedi cosa succede.",sk:"Ragionare e spiegare"},
+{n:"Costruisci la mappa",e:"🌳",s:"Finale",g:"Costruisci tu la mappa: collega le cause agli effetti con le frecce giuste.",sk:"Collegare, scegliere la direzione e il tipo di freccia"}];
+const L1=["Crisi finanziaria dello Stato","Il re convoca gli Stati Generali (1789)","Il Terzo Stato si proclama Assemblea Nazionale","Presa della Bastiglia (14 luglio)","Dichiarazione dei diritti dell’uomo e del cittadino"];
+const W2=["Lo Stato è pieno di debiti","Il Terzo Stato protesta","Il popolo di Parigi si arma","Viene scritta la Dichiarazione dei diritti","Napoleone diventa imperatore"];
+const L2=[{a:"Guerre e sprechi della corte",x:0,b:"Il re convoca gli Stati Generali"},{a:"Il voto “per ordine” favorisce nobili e clero",x:1,b:"Nasce l’Assemblea Nazionale"},{a:"Il re manda le truppe a Parigi",x:2,b:"Presa della Bastiglia"},{a:"Presa della Bastiglia",x:3,b:"Fine dei privilegi"}];
+const C3=[["Lo Stato ha tanti debiti",0],["Raccolti scarsi e pane carissimo",0],["Tasse pesanti per il popolo",0],["Società divisa in tre ordini",1],["Nobili e clero hanno privilegi",1],["Le idee dell’Illuminismo",2],["Il re comanda senza limiti",2]];
+const K3=["💰 Economiche","👥 Sociali","💡 Politiche e idee"];
+const S4=[["Crisi finanziaria → il re convoca gli Stati Generali",1],["Presa della Bastiglia → il re convoca gli Stati Generali",0,"Freccia invertita: la Bastiglia viene dopo, è un effetto, non una causa."],["Idee illuministe → richiesta di uguaglianza",1],["Dichiarazione dei diritti → inizio dei problemi economici",0,"I problemi economici sono una causa, non un effetto della Dichiarazione."],["Napoleone imperatore → Presa della Bastiglia",0,"Anacronismo! Napoleone diventa imperatore nel 1804, molto dopo."],["Pane troppo caro → malcontento del popolo",1]];
+const Q5=[{q:"E se nel 1788 il raccolto fosse stato ricco?",o:["La rivoluzione non sarebbe mai potuta succedere","Il pane costerebbe meno e il popolo sarebbe meno arrabbiato, ma debiti e privilegi resterebbero","Sarebbe scoppiata la rivoluzione russa"],c:1,w:"Il pane caro era solo UNA delle cause. Le cause profonde (debiti, privilegi) c’erano comunque."},
+{q:"E se il re avesse accettato il voto “per testa” negli Stati Generali?",o:["Il Terzo Stato, che era il più numeroso, avrebbe contato di più e forse ci sarebbe stato meno scontro","Nobili e clero avrebbero deciso tutto","Non sarebbero stati convocati"],c:0,w:"Con il voto per testa il Terzo Stato avrebbe pesato molto di più."},
+{q:"Quale causa è più “profonda” e quale è più “scatenante”?",o:["Profonda: la società in tre ordini. Scatenante: il pane troppo caro","Profonda: la presa della Bastiglia. Scatenante: l’Illuminismo","Sono tutte uguali"],c:0,w:"Le cause profonde durano da tempo, quelle scatenanti fanno scoppiare il fatto."}];
+let lvl=0,M6="g",done=[0,0,0,0,0,0],st={};
+function tabs(){$("#tabs").innerHTML=LV.map((l,i)=>`<button class="tab ${i==lvl?"on":""}" onclick="go(${i})">${l.e} ${i+1}. ${l.n}<small>${l.s}${done[i]?" ⭐":""}</small></button>`).join("");
+$("#stars").textContent="⭐".repeat(done.reduce((a,b)=>a+b,0))||"☆"}
+function go(i){lvl=i;st={};
+if(i==0)st={sl:[null,null,null,null,null],sel:null,pool:sh([0,1,2,3,4]),res:null};
+if(i==1)st={an:{},sel:null,bank:sh([0,1,2,3,4]),res:null};
+if(i==2)st={ct:{},ord:sh([0,1,2,3,4,5,6]),res:null};
+if(i==3)st={pk:{},ord:sh([0,1,2,3,4,5]),res:null};
+if(i==4)st={q:0,pt:0,pick:null,txt:""};
+if(i==5){g6(M6);return}
+draw()}
+function head(){const l=LV[lvl];return `<div class="goal">🎯 <b>Missione:</b> ${l.g}<br>🧠 <b>Alleni:</b> ${l.sk}</div>`}
+function draw(){tabs();const S=$("#stage");let h=head();
+if(lvl==0){const used=st.sl.filter(x=>x!==null);
+h+=`<p>Tocca una carta, poi tocca il numero dove vuoi metterla.</p><div class="cards">`+st.pool.filter(i=>!used.includes(i)).map(i=>`<button class="c ${st.sel===i?"sel":""}" onclick="st.sel=${i};draw()">${L1[i]}</button>`).join("")+`</div>`;
+h+=st.sl.map((v,k)=>`${k?'<div class="arr">⬇️</div>':""}<div class="slot"><div class="n">${k+1}</div><button class="sl ${v!==null?"f":""} ${st.res?(v===k?"ok":"bad"):""}" onclick="put(${k})">${v!==null?L1[v]:"…"}</button></div>`).join("");
+h+=`<button class="btn" onclick="chk0()">Controlla ✅</button><button class="btn g" onclick="go(0)">Ricomincia</button>`}
+if(lvl==1){h+=`<p>Tocca una tessera e poi la casella vuota.</p><div class="cards">`+st.bank.filter(i=>!Object.values(st.an).includes(i)).map(i=>`<button class="c ${st.sel===i?"sel":""}" onclick="st.sel=${i};draw()">${W2[i]}</button>`).join("")+`</div>`;
+h+=L2.map((r,k)=>{const v=st.an[k];return `<div class="row"><div class="t">${r.a}</div>➡️<button class="sl ${v!==undefined?"f":""} ${st.res?(v===r.x?"ok":"bad"):""}" onclick="put1(${k})">${v!==undefined?W2[v]:"❓ ?"}</button>➡️<div class="t">${r.b}</div></div>`}).join("");
+h+=`<button class="btn" onclick="chk1()">Controlla ✅</button><button class="btn g" onclick="go(1)">Ricomincia</button>`}
+if(lvl==2){h+=st.ord.map(i=>{const v=st.ct[i];return `<div class="c ${st.res?(v==C3[i][1]?"ok":"bad"):""}" style="display:block;margin:8px 0"><b>${C3[i][0]}</b><div class="cat">`+K3.map((k,j)=>`<button class="${v===j?"on":""}" onclick="st.ct[${i}]=${j};draw()">${k}</button>`).join("")+`</div></div>`}).join("");
+h+=`<button class="btn" onclick="chk2()">Controlla ✅</button><button class="btn g" onclick="go(2)">Ricomincia</button>`}
+if(lvl==3){h+=`<p>Tocca le frecce che secondo te sono <b>sbagliate</b>.</p>`+st.ord.map(i=>`<button class="c opt ${st.pk[i]&&!st.res?"sel":""} ${st.res?(S4[i][1]==0?(st.pk[i]?"ok":"bad"):(st.pk[i]?"bad":"")):""}" onclick="st.pk[${i}]=!st.pk[${i}];draw()">${st.pk[i]?"🚩 ":""}${S4[i][0]}</button>`).join("");
+h+=`<button class="btn" onclick="chk3()">Controlla ✅</button><button class="btn g" onclick="go(3)">Ricomincia</button>`}
+if(lvl==4){const q=Q5[st.q];if(q){h+=`<p><b>Domanda ${st.q+1} di ${Q5.length}</b><br>${q.q}</p>`+q.o.map((o,j)=>`<button class="c opt ${st.pick!==null?(j==q.c?"ok":(j==st.pick?"bad":"")):""}" onclick="ans5(${j})">${o}</button>`).join("");
+if(st.pick!==null)h+=`<div class="fb">💬 ${q.w}</div><p>✍️ Spiega con parole tue: perché?</p><textarea rows="2" id="tx" placeholder="Scrivi qui…"></textarea><button class="btn" onclick="st.q++;st.pick=null;draw()">Avanti ➡️</button>`}
+else{if(!done[4]&&st.pt>=2)done[4]=1;h+=`<h2>${st.pt>=2?"Sei un vero detective! 🏆":"Bravo, ci sei quasi!"}</h2><p>Risposte giuste: ${st.pt} su ${Q5.length}.</p><button class="btn" onclick="go(4)">Rigioca</button>`;tabs()}}
+if(lvl==5)h+=d6();if(lvl!=4)h+=`<div class="fb" id="fb">${st.msg||"Pronto? Via! 🚀"}</div>`;
+if(done.every(x=>x))h+=final();
+S.innerHTML=h}
+function put(k){if(st.sl[k]!==null){st.sl[k]=null}else if(st.sel!==null){st.sl[k]=st.sel;st.sel=null}st.res=null;draw()}
+function chk0(){if(st.sl.includes(null)){st.msg="Riempi tutti i posti prima di controllare 😉";return draw()}st.res=1;const n=st.sl.filter((v,k)=>v===k).length;if(n==5){done[0]=1;st.msg="🎉 Perfetto! Prima i debiti, poi gli Stati Generali, poi tutto il resto: ogni evento è causa del successivo."}else st.msg=`Giuste ${n} su 5. Pensa: cosa deve succedere PRIMA perché l’altro accada? Tocca una carta rossa per toglierla.`;draw()}
+function put1(k){if(st.an[k]!==undefined)delete st.an[k];else if(st.sel!==null){st.an[k]=st.sel;st.sel=null}st.res=null;draw()}
+function chk1(){if(Object.keys(st.an).length<4){st.msg="Completa tutte le caselle ❓";return draw()}st.res=1;const n=L2.filter((r,k)=>st.an[k]===r.x).length;if(n==4){done[1]=1;st.msg="🎉 Mappa completata! Hai trovato anche la tessera intrusa (Napoleone viene dopo!)."}else st.msg=`Giuste ${n} su 4. Leggi la frase da sinistra a destra: la tessera deve “spiegare” cosa viene dopo.`;draw()}
+function chk2(){if(Object.keys(st.ct).length<7){st.msg="Smista tutte le cause 👆";return draw()}st.res=1;const n=C3.filter((c,i)=>st.ct[i]===c[1]).length;if(n==7){done[2]=1;st.msg="🎉 Ottimo! Soldi, società e idee: la rivoluzione ha avuto più cause che si sono sommate."}else st.msg=`Giuste ${n} su 7. Suggerimento: economiche = soldi e cibo; sociali = gruppi di persone; politiche/idee = potere e pensieri.`;draw()}
+function chk3(){st.res=1;const ok=S4.every((s,i)=>!!st.pk[i]==(s[1]==0));if(ok){done[3]=1;st.msg="🎉 Occhio di falco! "}else st.msg="Non proprio: controlla le caselle verdi (errori trovati), rosse (frecce giuste segnate per sbaglio) o mancanti. ";
+st.msg+="<br>"+S4.filter(s=>!s[1]).map(s=>"🔎 "+s[2]).join("<br>");draw()}
+function ans5(j){if(st.pick!==null)return;st.pick=j;if(j==Q5[st.q].c)st.pt++;draw()}
+function final(){return `<h2>🏁 Mappa finale: hai sbloccato tutto!</h2><div class="map"><div style="background:var(--b1)">💰 Debiti e pane caro</div><div style="background:var(--b2)">👥 Tre ordini e privilegi</div><div style="background:var(--b3)">💡 Illuminismo</div></div><p style="text-align:center;font-size:1.5rem;margin:4px">⬇️ Stati Generali (1789) ⬇️<br>Assemblea Nazionale<br>⬇️ Bastiglia ⬇️<br>Dichiarazione dei diritti</p><div class="fb">🌟 Effetto finale: fine dei privilegi e nuova idea di cittadino con diritti.</div>`}
+const B6=[["Debiti dello Stato",0],["Pane carissimo",0],["Tasse pesanti",0],["Società in tre ordini",1],["Privilegi di nobili e clero",1],["Terzo Stato scontento",1],["Illuminismo",2],["Re con potere assoluto",2],["Stati Generali (1789)",3],["Assemblea Nazionale",3],["Presa della Bastiglia",3],["Dichiarazione dei diritti",4],["Fine dei privilegi",4],["Napoleone imperatore (1804)",5]];
+const R6=["💰 Cause economiche","👥 Cause sociali","💡 Politica e idee","⚡ Eventi del 1789","🏁 Effetti","🚫 Non c’entra"];
+const K6=["#ffe3b3","#d9f3ff","#e6dcff","#ffe0e6","#d8f7e4","#dddddd"];
+function g6(m){M6=m;st={pl:{},sel:null,res:null,o:sh([...B6.keys()])};if(m=="g")[0,3,6,8,11].forEach(i=>st.pl[i]=B6[i][1]);draw()}
+function d6(){let h=`<p>Il centro è la <b>Rivoluzione francese</b>. Tocca una tessera, poi il ramo dove va. Tocca una tessera già messa per toglierla. Attenzione: c’è un’intrusa!</p><div class="row"><button class="btn ${M6=="g"?"":"g"}" onclick="g6('g')">🧭 Guidata (alcune tessere già messe)</button><button class="btn ${M6=="l"?"":"g"}" onclick="g6('l')">🚀 Libera (da zero)</button></div>`;
+h+=`<div class="cards">`+st.o.filter(i=>!(i in st.pl)).map(i=>`<button class="c ${st.sel===i?"sel":""}" onclick="st.sel=${i};draw()">${B6[i][0]}</button>`).join("")+`</div>`;
+h+=`<div style="text-align:center"><div class="n" style="width:auto;height:auto;border-radius:30px;padding:12px 20px;display:inline-block;font-size:1.1rem">🇫🇷 Rivoluzione francese</div><div class="arr">⬇️</div></div><div class="map">`;
+h+=R6.map((r,k)=>`<div style="background:${K6[k]};color:#2b2350" onclick="br(${k})"><b>${r}</b>`+B6.map((b,i)=>st.pl[i]===k?`<button class="c lf ${st.res?(b[1]==k?"ok":"bad"):""}" onclick="event.stopPropagation();rm(${i})">${b[0]}</button>`:"").join("")+`</div>`).join("")+`</div>`;
+return h+`<button class="btn" onclick="chk6()">Controlla ✅</button><button class="btn g" onclick="g6(M6)">Ricomincia</button>`}
+function br(k){if(st.sel!==null){st.pl[st.sel]=k;st.sel=null;st.res=null;draw()}}
+function rm(i){delete st.pl[i];st.res=null;draw()}
+function chk6(){if(Object.keys(st.pl).length<B6.length){st.msg="Metti tutte le tessere sui rami 🌿";return draw()}st.res=1;const n=B6.filter((b,i)=>st.pl[i]===b[1]).length;if(n==B6.length){done[5]=1;st.msg="🎉 Mappa completata! Hai organizzato cause, eventi ed effetti e hai scartato l’intrusa: Napoleone arriva dopo!"}else st.msg=`Giuste ${n} su ${B6.length}. Aiuto: le cause vengono PRIMA del 1789, gli eventi sono nel 1789, gli effetti arrivano DOPO.`;draw()}
+const N6=[[50,40,["Debiti","dello Stato"],"#ffe3b3"],[350,40,["Pane","carissimo"],"#ffe3b3"],[150,40,["Società in","tre ordini"],"#d9f3ff"],[250,40,["Idee","illuministe"],"#e6dcff"],[70,200,["Stati Generali","(1789)"],"#ffe0e6"],[200,200,["Assemblea","Nazionale"],"#ffe0e6"],[330,200,["Presa della","Bastiglia"],"#ffe0e6"],[200,370,["Dichiarazione","dei diritti"],"#d8f7e4"],[330,370,["Fine dei","privilegi"],"#d8f7e4"]];
+const A6=[[0,4,1],[1,6,0],[2,5,1],[3,5,0],[4,5,1],[5,6,1],[6,7,1],[7,8,1]];
+const CL6=["#6c4bff","#1fb86b","#ff5a5f","#ff9f1c"];
+function g6(m){M6=m;st={ar:m=="g"?[[0,4,1],[4,5,1],[5,6,1]]:[],sel:null,tp:1,res:null};draw()}
+function ends(a,b){const p=N6[a],q=N6[b],dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy),s=Math.min(46/(Math.abs(dx)||1e-9),25/(Math.abs(dy)||1e-9)),e=4/L;return[p[0]+dx*(s+e),p[1]+dy*(s+e),q[0]-dx*(s+e),q[1]-dy*(s+e)]}
+function sta(x){if(!st.res)return 0;if(A6.some(r=>r[0]==x[0]&&r[1]==x[1]&&r[2]==x[2]))return 1;if(A6.some(r=>r[0]==x[0]&&r[1]==x[1]))return 3;return 2}
+function d6(){let h=`<p>Tocca una <b>causa</b> e poi il suo <b>effetto</b>: nasce una freccia (➡️ piena = causa diretta, ⇢ tratteggiata = causa indiretta). Tocca una freccia per cancellarla.</p><div class="row"><button class="btn ${st.tp?"":"g"}" onclick="st.tp=1;draw()">➡️ Causa diretta</button><button class="btn ${st.tp?"g":""}" onclick="st.tp=0;draw()">⇢ Causa indiretta</button></div><div class="row"><button class="btn ${M6=="g"?"":"g"}" onclick="g6('g')">🧭 Guidata (qualche freccia già messa)</button><button class="btn ${M6=="l"?"":"g"}" onclick="g6('l')">🚀 Libera (da zero)</button></div>`;
+h+=`<svg viewBox="0 0 400 410" style="width:100%;max-width:560px;display:block;margin:auto"><defs>`+CL6.map((c,i)=>`<marker id="m${i}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="${c}"/></marker>`).join("")+`</defs>`+[["CAUSE",12],["EVENTI",168],["EFFETTI",338]].map(r=>`<text x="4" y="${r[1]}" font-size="10" font-weight="700" style="fill:var(--mut)">${r[0]}</text>`).join("");
+h+=st.ar.map((x,i)=>{const e=ends(x[0],x[1]),c=sta(x);return `<line x1="${e[0]}" y1="${e[1]}" x2="${e[2]}" y2="${e[3]}" stroke="${CL6[c]}" stroke-width="3" ${x[2]?"":'stroke-dasharray="7 5"'} marker-end="url(#m${c})"/><line x1="${e[0]}" y1="${e[1]}" x2="${e[2]}" y2="${e[3]}" stroke="transparent" stroke-width="16" style="cursor:pointer" onclick="del6(${i})"/>`}).join("");
+h+=N6.map((n,i)=>`<g onclick="nd(${i})" style="cursor:pointer"><rect x="${n[0]-46}" y="${n[1]-25}" width="92" height="50" rx="12" fill="${n[3]}" stroke="${st.sel===i?"#6c4bff":"#2b2350"}" stroke-width="${st.sel===i?4:1.5}"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#2b2350"><tspan x="${n[0]}" y="${n[1]-3}">${n[2][0]}</tspan><tspan x="${n[0]}" dy="14">${n[2][1]}</tspan></text></g>`).join("")+`</svg>`;
+return h+`<button class="btn" onclick="chk6()">Controlla ✅</button><button class="btn g" onclick="g6(M6)">Ricomincia</button>`}
+function nd(i){if(st.sel===null)st.sel=i;else if(st.sel===i)st.sel=null;else{const a=st.sel;st.ar=st.ar.filter(x=>!(x[0]==a&&x[1]==i));st.ar.push([a,i,st.tp]);st.sel=null;st.res=null}draw()}
+function del6(i){st.ar.splice(i,1);st.res=null;draw()}
+function chk6(){if(!st.ar.length){st.msg="Disegna almeno una freccia 👆";return draw()}st.res=1;let g=0,t=0,v=0,w=0;st.ar.forEach(x=>{const c=sta(x);if(c==1)g++;else if(c==3)t++;else if(A6.some(r=>r[0]==x[1]&&r[1]==x[0]))v++;else w++});const m=A6.filter(r=>!st.ar.some(x=>(x[0]==r[0]&&x[1]==r[1])||(x[0]==r[1]&&x[1]==r[0]))).length;
+if(g==8&&st.ar.length==8){done[5]=1;st.msg="🎉 Mappa perfetta! Ora spiega a voce: perché le frecce tratteggiate sono cause indirette?"}else st.msg=`Frecce giuste: ${g} su 8.`+(v?` 🔄 ${v} invertite: la causa viene prima dell’effetto!`:"")+(t?` ⚠️ ${t} col tipo sbagliato (piena = diretta, tratteggiata = indiretta).`:"")+(w?` ❌ ${w} collegamenti che non c’entrano.`:"")+(m?` ➕ Ne mancano ${m}.`:"")+" Verde = giusta, rossa = errore, arancione = tipo sbagliato.";draw()}
+go(0);
+</script>
+</body>
+</html>
