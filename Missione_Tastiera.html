@@ -1,0 +1,1626 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>[hidden]{display:none!important}body{margin:0}</style>
+<title>Missione Tastiera</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Lexend+Zetta:wght@600&display=swap">
+<style>
+/* Layout: una colonna centrata. Schermate: allievo (dati) -> gioco -> fine missione; insegnante (PIN) -> area di gestione e report.
+   Tema scuro scelto di proposito: e' una plancia spaziale, non cambia con il tema del sistema. */
+:root{
+  --bg:#080C24;
+  --panel:#121A40;
+  --panel-2:#1B2552;
+  --line:#2C3A78;
+  --text:#EEF2FF;
+  --muted:#A3B0E0;
+  --amber:#FFC24B;
+  --amber-ink:#2A1B00;
+  --teal:#46D9C4;
+  --coral:#FF7A7A;
+  --lilac:#B9A6FF;
+  --font:'Lexend',system-ui,'Segoe UI',Arial,sans-serif;
+  --display:'Lexend Zetta','Lexend',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{background:var(--bg)}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(1100px 520px at 85% -8%,#1B2465 0%,transparent 62%),radial-gradient(800px 400px at -10% 110%,#16204f 0%,transparent 60%);
+  color:var(--text);
+  font:16px/1.6 var(--font);
+  padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{margin:0;line-height:1.25;text-wrap:balance}
+p{margin:0}
+.muted{color:var(--muted)}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);font-weight:600}
+
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{flex:none}
+.brand b{font-family:var(--display);font-size:14px;letter-spacing:.06em;color:var(--amber);font-weight:600}
+.brand span{color:var(--muted);font-size:14px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+.panel h2{font-size:20px;margin-bottom:14px}
+.panel h3{font-size:17px;margin-bottom:12px}
+
+/* Allievo */
+.hero{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;padding:8px 2px}
+.hero h1{font-family:var(--display);font-size:clamp(26px,5vw,42px);color:var(--amber);font-weight:600;letter-spacing:.01em}
+.hero p{margin-top:10px;max-width:52ch;color:var(--muted);font-size:17px}
+.hero svg{max-width:160px;height:auto}
+.setup{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:20px;align-items:start}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f>span{font-size:14px;color:var(--muted);font-weight:500}
+input[type=text],input[type=date],input[type=password],select{
+  font:inherit;font-size:18px;color:var(--text);background:var(--bg);border:2px solid var(--line);border-radius:10px;
+  min-height:52px;padding:8px 14px;width:100%;min-width:0;
+}
+select{font-size:16px}
+input::placeholder,textarea::placeholder{color:#6B79B3}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+fieldset{border:0;margin:20px 0 0;padding:0;display:flex;flex-direction:column;gap:14px;min-width:0}
+legend{font-size:14px;color:var(--teal);font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:0;margin-bottom:12px}
+.opt3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.opt2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.check{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--amber);flex:none}
+.checks{display:flex;flex-wrap:wrap;gap:6px 24px}
+.msg{min-height:1.6em;color:var(--coral);font-weight:500;margin-top:14px}
+.how ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px}
+.how li{color:var(--text);padding-left:18px;position:relative}
+.how li::before{content:"";position:absolute;left:0;top:.65em;width:7px;height:7px;border-radius:50%;background:var(--teal)}
+.how .small{margin-top:16px;font-size:14px;color:var(--muted)}
+
+.btn{
+  font:inherit;font-weight:600;font-size:17px;min-height:50px;padding:10px 22px;border-radius:12px;cursor:pointer;
+  border:2px solid var(--line);background:var(--panel-2);color:var(--text);
+}
+.btn:hover{border-color:var(--teal)}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent}
+.btn.small{min-height:40px;font-size:15px;padding:6px 14px}
+.btn[disabled]{opacity:.5;cursor:default}
+.start{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
+
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:520px}
+th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid rgba(44,58,120,.55);vertical-align:middle}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.empty{color:var(--muted);padding:6px 0}
+
+/* Gioco */
+.hud{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr) auto;gap:14px 20px;align-items:center}
+.hud .who{min-width:0}
+.hud .who b{display:block;font-size:17px;overflow-wrap:anywhere}
+.hud .who span{color:var(--teal);font-size:14px;font-weight:500}
+.timebox{min-width:0}
+.timerow{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+.timerow b{color:var(--text);font-variant-numeric:tabular-nums;font-size:15px}
+.bar{display:block;height:12px;border-radius:99px;background:var(--panel-2);overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--lilac));border-radius:99px}
+.stats{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;align-items:flex-start;min-width:62px}
+.stat small{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stat b{font-size:20px;font-variant-numeric:tabular-nums;line-height:1.2}
+.shields{display:flex;gap:5px}
+.shields i{width:14px;height:22px;border-radius:5px 5px 9px 9px;background:var(--teal);border:2px solid var(--teal)}
+.shields i.off{background:transparent;border-color:var(--line)}
+.stage{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#05081c}
+canvas{display:block;width:100%}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,28,.82);padding:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;max-width:560px;width:100%;display:flex;flex-direction:column;gap:14px;max-height:100%;overflow:auto}
+.card h2{font-size:24px}
+.card .starline{font-size:34px;letter-spacing:.12em;color:var(--amber);line-height:1}
+.card .starline .off{color:var(--line)}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mini div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.mini small{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mini b{font-size:20px;font-variant-numeric:tabular-nums}
+.card .btns{display:flex;flex-wrap:wrap;gap:10px}
+.sentence{
+  background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:18px 22px;
+  font-size:clamp(22px,3.3vw,32px);line-height:1.75;letter-spacing:.03em;font-weight:500;white-space:pre-wrap;overflow-wrap:anywhere;min-height:5.2em;
+}
+.sentence .c{color:var(--text)}
+.sentence .d{color:var(--teal)}
+.sentence .s{color:#6B79B3}
+.sentence .cur{background:var(--amber);color:var(--amber-ink);border-radius:5px}
+.sentence .cur.err{background:var(--coral)}
+.sentence.upper{text-transform:uppercase}
+.sentence .wait{color:var(--muted);font-size:.7em}
+.controls{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+.controls p{font-size:14px;color:var(--muted)}
+
+/* Fine missione */
+.endcard{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:16px;text-align:left}
+.endcard h2{font-family:var(--display);font-size:clamp(22px,4vw,32px);color:var(--amber);font-weight:600}
+
+/* Insegnante */
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.between{justify-content:space-between}
+textarea{
+  width:100%;font:16px/1.6 var(--font);color:var(--text);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:12px 14px;resize:vertical;min-height:120px;
+}
+textarea.mono{font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;min-height:220px}
+.hint{color:var(--muted);font-size:14px;margin-top:10px;max-width:72ch}
+.status{margin-top:12px;min-height:1.6em;color:var(--teal);font-weight:500}
+.status.bad{color:var(--coral)}
+.gate{max-width:440px;margin:40px auto 0;display:flex;flex-direction:column;gap:14px}
+
+/* Report */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.tile small{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tile b{display:block;font-size:26px;margin-top:4px;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile b em{font-style:normal;font-size:14px;color:var(--muted);font-weight:500}
+.rsec h3{font-size:18px;margin-bottom:14px}
+.rsec .blk{margin-top:16px}
+.rsec .blk:first-of-type{margin-top:0}
+.rsec p.cap{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+.rsec p.t{color:var(--text);max-width:75ch}
+.rsec ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;max-width:75ch}
+.kv{display:grid;grid-template-columns:minmax(120px,220px) 1fr;gap:6px 18px}
+.kv dt{color:var(--muted);font-size:14px}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.obs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.obs textarea{min-height:90px}
+.chkgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2px 20px}
+.abcrow{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:140px 1fr 1fr 1fr 160px auto;gap:10px;align-items:start;font-size:14px}
+.abcform{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.star{color:var(--amber);letter-spacing:.08em;white-space:nowrap}
+.star .off{color:var(--line)}
+.ok{color:var(--teal);font-weight:600}.warn{color:var(--coral);font-weight:600}.neu{color:var(--lilac);font-weight:600}
+.pbar{display:inline-block;height:8px;width:70px;border-radius:99px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden;vertical-align:middle;margin-left:8px}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--lilac))}
+details summary{cursor:pointer;font-weight:600}
+
+@media (max-width:760px){
+  .setup{grid-template-columns:minmax(0,1fr)}
+  .hero{grid-template-columns:1fr}
+  .hero svg{display:none}
+  .hud{grid-template-columns:minmax(0,1fr)}
+  .fields,.opt3,.opt2{grid-template-columns:1fr}
+  .mini{grid-template-columns:1fr 1fr}
+  .kv{grid-template-columns:1fr}
+  .abcrow{grid-template-columns:1fr}
+}
+</style>
+
+</head><body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="#1B2552" stroke="#2C3A78"/><path d="M17 6c4 3 5 8 4 13l-4 3-4-3c-1-5 0-10 4-13z" fill="#EEF2FF"/><circle cx="17" cy="13" r="2.2" fill="#46D9C4"/><path d="M13 18l-3 4 4-1zM21 18l3 4-4-1z" fill="#FFC24B"/><path d="M15.5 23h3l-1.5 5z" fill="#FF7A7A"/></svg>
+      <div><b>MISSIONE TASTIERA</b><br><span>Allenamento di digitazione</span></div>
+    </div>
+    <button class="btn small ghost" type="button" id="btnTeacher">Area insegnante</button>
+  </div>
+
+  <!-- ALLIEVO: dati -->
+  <section id="screen-setup" class="wrap" style="gap:20px">
+    <div class="hero">
+      <div>
+        <h1>Missione Tastiera</h1>
+        <p>Scrivi le parole e le frasi che arrivano dallo spazio prima che raggiungano la base. Ogni livello ti porta più lontano e un po' più veloce.</p>
+      </div>
+      <svg viewBox="0 0 160 160" width="160" height="160" aria-hidden="true">
+        <defs><radialGradient id="g1" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#6b2d0d" stop-opacity=".55"/></radialGradient></defs>
+        <circle cx="104" cy="58" r="40" fill="#F2C48A"/><circle cx="104" cy="58" r="40" fill="url(#g1)"/>
+        <path d="M70 52h68M66 66h76" stroke="#9A5B2E" stroke-width="6" opacity=".45"/>
+        <g transform="translate(40 92) rotate(-28)"><path d="M0-40c14 10 18 28 14 46l-14 10-14-10C-18-12-14-30 0-40z" fill="#EEF2FF"/><circle cx="0" cy="-16" r="7" fill="#46D9C4"/><path d="M-14 6l-12 16 16-4zM14 6l12 16-16-4z" fill="#FFC24B"/><path d="M-5 16h10l-5 22z" fill="#FF7A7A"/></g>
+        <circle cx="22" cy="28" r="3" fill="#B9A6FF"/><circle cx="140" cy="128" r="2.4" fill="#46D9C4"/><circle cx="60" cy="140" r="2" fill="#EEF2FF"/>
+      </svg>
+    </div>
+
+    <div class="setup">
+      <form id="form" class="panel" novalidate autocomplete="off">
+        <h2>Dati dell'astronauta</h2>
+        <div class="fields">
+          <label class="f"><span>Nome</span><input id="nome" name="nome" type="text" autocomplete="off" maxlength="40" placeholder="Il tuo nome"></label>
+          <label class="f"><span>Cognome</span><input id="cognome" name="cognome" type="text" autocomplete="off" maxlength="40" placeholder="Il tuo cognome"></label>
+          <label class="f"><span>Classe</span><input id="classe" name="classe" type="text" maxlength="12" placeholder="es. 2ªB"></label>
+          <label class="f"><span>Data</span><input id="data" name="data" type="date"></label>
+        </div>
+
+        <fieldset id="optsBox" hidden>
+          <legend>Come vuoi giocare</legend>
+          <div class="opt3">
+            <label class="f"><span>Parti dal livello</span><select id="startLevel"></select></label>
+            <label class="f"><span>Velocità</span>
+              <select id="speed"><option value="tranquilla">Tranquilla</option><option value="normale">Normale</option><option value="veloce">Veloce</option></select></label>
+            <label class="f"><span>Durata di ogni livello</span>
+              <select id="secs"><option value="45">45 secondi</option><option value="60">60 secondi</option><option value="90">90 secondi</option></select></label>
+          </div>
+          <div class="checks">
+            <label class="check"><input id="optUpper" type="checkbox"> Scrivi in MAIUSCOLO</label>
+            <label class="check"><input id="optSound" type="checkbox" checked> Suoni</label>
+          </div>
+        </fieldset>
+
+        <p id="formMsg" class="msg" role="alert"></p>
+        <div class="start"><button class="btn primary" type="submit">Inizia la missione</button></div>
+      </form>
+
+      <aside class="panel how">
+        <h2>Come si gioca</h2>
+        <ul>
+          <li>Scrivi la parola o la frase che vedi. Ogni lettera giusta spara un raggio laser.</li>
+          <li>Se sbagli lettera non succede nulla: premi quella giusta. Maiuscole e minuscole sono uguali.</li>
+          <li>Hai 5 scudi per livello. Se un asteroide tocca la base ne perdi uno.</li>
+          <li>Resisti fino alla fine del tempo per passare al livello dopo. Più sei preciso, più stelle ottieni.</li>
+          <li>Premi Esc per fare una pausa.</li>
+        </ul>
+        <p class="small">Serve una tastiera di computer.</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ALLIEVO: gioco -->
+  <section id="screen-game" class="wrap" style="gap:14px" hidden>
+    <div class="hud">
+      <div class="who"><b id="hudName"></b><span id="hudLevel"></span></div>
+      <div class="timebox">
+        <div class="timerow"><span>Distanza dalla meta</span><b id="timeText">1:00</b></div>
+        <span class="bar" aria-hidden="true"><i id="timeFill" style="width:0%"></i></span>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>Scudi</small><div class="shields" id="shields" aria-label="Scudi"></div></div>
+        <div class="stat"><small>Punti</small><b id="hudScore">0</b></div>
+        <div class="stat"><small>PPM</small><b id="hudPpm">–</b></div>
+        <div class="stat"><small>Precisione</small><b id="hudAcc">–</b></div>
+        <div class="stat"><small>Velocità</small><b id="hudSpeed">×1,0</b></div>
+      </div>
+    </div>
+    <div class="stage" id="stage">
+      <canvas id="cv" role="img" aria-label="Campo di gioco: asteroidi con parole o frasi da scrivere"></canvas>
+      <div class="overlay" id="overlay" role="dialog" aria-modal="true" hidden><div class="card" id="card"></div></div>
+    </div>
+    <div class="sentence" id="sentence" hidden aria-live="off"></div>
+    <div class="controls">
+      <p>Scrivi con la tastiera.</p>
+      <div class="row">
+        <button class="btn small ghost" type="button" id="btnNote">Annota (insegnante)</button>
+        <button class="btn small" type="button" id="btnPause">Pausa</button>
+        <button class="btn small ghost" type="button" id="btnEnd">Termina la missione</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALLIEVO: fine missione -->
+  <section id="screen-end" class="wrap" hidden>
+    <div class="panel endcard">
+      <p class="eyebrow">Missione terminata</p>
+      <h2 id="endTitle">Bel lavoro!</h2>
+      <p class="muted" id="endText"></p>
+      <div class="mini" id="endMini"></div>
+      <p class="muted">Il report completo lo salva l'insegnante dall'area riservata.</p>
+      <div class="btns row">
+        <button class="btn primary" type="button" id="endReport">Area insegnante: report</button>
+        <button class="btn" type="button" id="endCont">Continua la missione</button>
+        <button class="btn ghost" type="button" id="endNew">Nuova missione</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSEGNANTE -->
+  <section id="screen-teacher" class="wrap" hidden>
+    <div id="tGate" class="panel gate">
+      <h2 id="gateTitle">Area insegnante</h2>
+      <p class="muted" id="gateText">Inserisci il PIN.</p>
+      <label class="f"><span id="gateLabel">PIN</span><input id="pinIn" type="password" inputmode="numeric" autocomplete="off" maxlength="12"></label>
+      <p class="msg" id="gateMsg" role="alert" style="margin:0"></p>
+      <div class="row"><button class="btn primary" type="button" id="gateOk">Entra</button><button class="btn ghost" type="button" id="gateCancel">Torna al gioco</button></div>
+    </div>
+
+    <div id="tPanel" class="wrap" style="gap:18px" hidden>
+      <div class="panel row between">
+        <div><p class="eyebrow">Area insegnante</p><h2 style="margin:4px 0 0">Gestione di Missione Tastiera</h2></div>
+        <div class="row"><button class="btn small" type="button" id="tTest">Prova il gioco</button><button class="btn small ghost" type="button" id="tLock">Esci</button></div>
+      </div>
+
+      <section class="panel">
+        <h3>Frasi da scrivere</h3>
+        <p class="hint" style="margin:0 0 12px">Una frase per riga. Le frasi sono divise da sole in brevi (fino a 24 caratteri), medie (25-44) e lunghe (45 o più). Gli accenti si possono scrivere: l'allievo può digitare anche la lettera senza accento.</p>
+        <textarea id="tSentences" rows="10" aria-label="Frasi"></textarea>
+        <p class="hint" id="tCount"></p>
+        <div class="row" style="margin-top:12px"><button class="btn small" type="button" id="tResetS">Ripristina le frasi predefinite</button></div>
+      </section>
+
+      <section class="panel">
+        <h3>Parole</h3>
+        <p class="hint" style="margin:0 0 12px">Parole per i livelli con gli asteroidi, separate da spazio o a capo. Usa solo lettere.</p>
+        <textarea id="tWords" rows="5" aria-label="Parole"></textarea>
+        <div class="row" style="margin-top:12px"><button class="btn small" type="button" id="tResetW">Ripristina le parole predefinite</button></div>
+      </section>
+
+      <section class="panel">
+        <h3>Impostazioni per la classe</h3>
+        <div class="opt3">
+          <label class="f"><span>Percorso</span><select id="tPath"><option value="completo">Completo: lettere, parole, frasi</option><option value="frasi">Solo frasi</option></select></label>
+          <label class="f"><span>Livello di partenza</span><select id="tStart"></select></label>
+          <label class="f"><span>Velocità</span><select id="tSpeed"><option value="tranquilla">Tranquilla</option><option value="normale">Normale</option><option value="veloce">Veloce</option></select></label>
+          <label class="f"><span>Durata di ogni livello</span><select id="tSecs"><option value="45">45 secondi</option><option value="60">60 secondi</option><option value="90">90 secondi</option></select></label>
+          <label class="f"><span>Nome dell'osservatore (per il report)</span><input id="tObserver" type="text" maxlength="60"></label>
+        </div>
+        <div class="checks" style="margin-top:14px">
+          <label class="check"><input id="tPunct" type="checkbox"> Richiedi punteggiatura nelle frasi (virgole, punti, apostrofi)</label>
+          <label class="check"><input id="tUpper" type="checkbox"> Mostra in MAIUSCOLO</label>
+          <label class="check"><input id="tSound" type="checkbox"> Suoni</label>
+          <label class="check"><input id="tChoice" type="checkbox"> Lascia scegliere velocità e durata all'allievo</label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3>Salva per la classe</h3>
+        <div class="row">
+          <button class="btn primary" type="button" id="tSave">Salva e pubblica</button>
+          <button class="btn" type="button" id="tExport">Esporta la configurazione</button>
+          <button class="btn" type="button" id="tImport">Importa una configurazione</button>
+          <input id="tFile" type="file" accept=".json,application/json" hidden>
+        </div>
+        <p class="status" id="tStatus" aria-live="polite"></p>
+        <p class="hint">Quando pubblichi, gli allievi che hanno già la pagina aperta la vedono ricaricarsi: conviene farlo prima della lezione. Se la pubblicazione non è possibile da qui, le modifiche restano su questo computer e puoi portarle altrove con Esporta e Importa.</p>
+      </section>
+
+      <section class="panel">
+        <h3>Registro delle missioni su questo computer</h3>
+        <div id="logBody"></div>
+        <div class="row" id="logActions" style="margin-top:14px" hidden>
+          <button class="btn small" type="button" id="btnLogCsv">Salva il registro (.csv)</button>
+          <button class="btn small ghost" type="button" id="btnLogClear">Svuota il registro</button>
+          <span id="logStatus" class="status" style="margin:0" aria-live="polite"></span>
+        </div>
+        <p class="hint">Il registro conserva i dati riassuntivi di ogni missione. L'elenco dei singoli tasti premuti è disponibile solo subito dopo la partita, dal report.</p>
+      </section>
+
+      <section class="panel">
+        <h3>PIN</h3>
+        <div class="opt3"><label class="f"><span>Nuovo PIN (4-12 cifre)</span><input id="tPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12"></label></div>
+        <div class="row" style="margin-top:12px"><button class="btn small" type="button" id="tPinSave">Cambia il PIN</button></div>
+        <p class="status" id="tPinStatus" aria-live="polite"></p>
+        <p class="hint">Il PIN nasconde l'area insegnante e i report agli allievi. Non è una protezione informatica avanzata.</p>
+      </section>
+    </div>
+  </section>
+
+  <!-- INSEGNANTE: report -->
+  <section id="screen-report" class="wrap" style="gap:18px" hidden>
+    <div class="panel">
+      <p class="eyebrow">Report della missione</p>
+      <h2 id="repWho" style="margin:6px 0 4px;font-size:26px"></h2>
+      <p id="repMeta" class="muted"></p>
+    </div>
+    <div class="tiles" id="repTiles"></div>
+    <div id="repBody" class="wrap" style="gap:18px"></div>
+    <div class="panel">
+      <h3>Salva e invia</h3>
+      <div class="row">
+        <button class="btn primary" type="button" id="btnDocx">Salva il report (.docx)</button>
+        <button class="btn" type="button" id="btnCsv">Dati per livello (.csv)</button>
+        <button class="btn" type="button" id="btnKeys">Tasti premuti (.csv)</button>
+        <button class="btn" type="button" id="btnCopy">Copia il testo</button>
+      </div>
+      <p class="status" id="repStatus" aria-live="polite"></p>
+      <p class="hint">Il file Word contiene tutto il report, compresa la scheda di osservazione. I file .csv si aprono con Excel o con un foglio di calcolo. Per inviare: allega i file a un messaggio oppure incolla il testo copiato.</p>
+      <details style="margin-top:14px"><summary>Mostra il testo del report</summary><textarea id="repText" class="mono" readonly aria-label="Testo del report" style="margin-top:12px"></textarea></details>
+    </div>
+    <div class="row">
+      <button class="btn primary" type="button" id="btnCont">Continua la missione</button>
+      <button class="btn" type="button" id="btnBackT">Torna all'area insegnante</button>
+      <button class="btn ghost" type="button" id="btnNew">Nuova missione</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+const TAU=Math.PI*2;
+const $=s=>document.querySelector(s);
+const RM=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+const COL={};
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function loadColors(){['bg','panel','line','text','muted','amber','teal','coral','lilac'].forEach(k=>{COL[k]=cssv('--'+k);});}
+
+/* ================= Dati predefiniti ================= */
+const WORDS=('ape uva tre due sei via ora sci gru oro ago ala era mai noi voi lei lui poi sul dal non che chi per con bus bar gol web tuo suo mio mia sua tua zio zia nei gli '+
+'sole luna mare casa cane pane lupo orso nave vela riso pera cena aula gita voto nota foto film tuta aria idea onda luce voce pace lago mela tema rima ciao naso mano dito dado fumo '+
+'gatto pesce tigre fiore libro penna amico tempo sogno vento terra mondo razzo cielo notte fuoco panda zebra mucca treno borsa banco sedia giove marte urano pizza festa campo gioco corsa tasto video amici bimbo cosmo '+
+'scuola nuvola stella stelle matita orbita cometa venere tablet giorno estate sabato lunedi panino gelato amiche musica domani '+
+'pianeta saturno nettuno plutone schermo ragazzo sorriso cuscino pallone cavallo gravita lavagna compito lezione maestra inverno autunno sorella mattina '+
+'astronave satellite meteorite astronauta telescopio pennarello bicicletta pomeriggio orologio universo galassia mercurio tastiera computer quaderno compagno cartella telefono fratello gelateria videogioco primavera avventura scoperta').split(' ');
+const SENTENCES=[
+"Il sole splende.","Oggi studio con calma.","La luna è lontana.","Il razzo parte presto.","Mi piace il mare.","Scrivo con attenzione.","Il cane corre nel prato.","Ho una matita blu.","Le stelle brillano.","Vado a scuola a piedi.","La mia classe è unita.","Leggo un libro nuovo.","Il cielo è sereno.","Mangio una mela rossa.","Domani c'è la gita.","Il gatto dorme.",
+"Gli astronauti viaggiano nello spazio.","Il mio amico gioca a pallone nel cortile.","Oggi in classe abbiamo fatto una ricerca.","Saturno ha degli anelli molto grandi.","Al mattino faccio colazione con il latte.","Il treno arriva alla stazione alle otto.","La luna gira intorno alla Terra.","Questa settimana leggiamo un racconto.","Mia sorella disegna un pianeta colorato.","Il cielo di notte è pieno di stelle.","Con la tastiera scrivo sempre meglio.","Il professore apre la finestra della classe.","La navicella atterra sul pianeta rosso.","Dopo pranzo faccio i compiti con calma.","In giardino sono fioriti i primi tulipani.",
+"Ogni giorno mi alleno un poco per scrivere più veloce.","Il pianeta Marte è rosso perché il suo suolo contiene ferro.","Quando il razzo decolla, tutti i motori si accendono insieme.","Nella nostra galassia ci sono miliardi di stelle e di pianeti.","Dopo la lezione di scienze abbiamo disegnato il sistema solare.","Se sbaglio un tasto non mi preoccupo e continuo con attenzione.","Il sabato pomeriggio mi piace andare in bicicletta con i miei amici.","La Terra è l'unico pianeta dove sappiamo che esiste la vita.","Per scrivere bene bisogna stare comodi e tenere le mani rilassate.","Questa mattina la maestra ci ha letto una storia molto divertente.","Il telescopio ci permette di osservare le stelle più lontane.","Con pazienza e allenamento tutti possono imparare a scrivere con la tastiera."];
+const DEFAULT_CFG={v:1,updated:0,pinHash:'',observer:'',sentences:null,words:null,
+  defaults:{path:'completo',startLevel:1,speed:'normale',secs:60,upper:false,sound:true,punct:false},studentChoice:false};
+
+const PLANETS=[
+ {short:'Decollo',title:'Decollo dalla Terra',planet:{type:'earth',c1:'#6CC3FF',c2:'#1D4F91',label:'Terra'}},
+ {short:'Orbita',title:'In orbita',planet:{type:'earth',c1:'#6CC3FF',c2:'#1D4F91',label:'Terra'}},
+ {short:'Luna',title:'Verso la Luna',planet:{type:'moon',c1:'#E4E6F0',c2:'#6F7690',label:'Luna'}},
+ {short:'Marte',title:'Verso Marte',planet:{type:'mars',c1:'#FF9A6B',c2:'#8E2F1F',label:'Marte'}},
+ {short:'Giove',title:'Verso Giove',planet:{type:'jupiter',c1:'#F2C48A',c2:'#9A5B2E',label:'Giove'}},
+ {short:'Saturno',title:'Verso Saturno',planet:{type:'saturn',c1:'#F5DFA0',c2:'#A98A4A',label:'Saturno'}},
+ {short:'Nettuno',title:'Verso Nettuno',planet:{type:'neptune',c1:'#8FB4FF',c2:'#2A3FA8',label:'Nettuno'}},
+ {short:'Galassia',title:'Oltre la galassia',planet:{type:'galaxy',c1:'#B9A6FF',c2:'#5B3FD0',label:'Galassia'}}
+];
+const PLANS={
+ completo:[
+  {type:'letters',letters:'asdfghjkl',fall:16,spawn:3.2,v:1.0},
+  {type:'words',len:[3,4],fall:14,spawn:3.0,v:1.2},
+  {type:'words',len:[5,6],fall:13,spawn:3.6,v:1.4},
+  {type:'words',len:[7,10],fall:12,spawn:4.4,v:1.6},
+  {type:'sentence',band:'short',cps:.7,v:1.8},
+  {type:'sentence',band:'short',cps:.9,v:2.0},
+  {type:'sentence',band:'medium',cps:1.0,v:2.3},
+  {type:'sentence',band:'long',cps:1.2,v:2.6}],
+ frasi:[
+  {type:'sentence',band:'short',cps:.6,v:1.0},
+  {type:'sentence',band:'short',cps:.75,v:1.2},
+  {type:'sentence',band:'short',cps:.9,v:1.4},
+  {type:'sentence',band:'medium',cps:.8,v:1.6},
+  {type:'sentence',band:'medium',cps:.95,v:1.8},
+  {type:'sentence',band:'medium',cps:1.1,v:2.0},
+  {type:'sentence',band:'long',cps:1.0,v:2.3},
+  {type:'sentence',band:'long',cps:1.2,v:2.6}]
+};
+const BANDS={short:'Frasi brevi',medium:'Frasi di media lunghezza',long:'Frasi lunghe'};
+const SPEEDS={tranquilla:{m:.75,label:'Tranquilla'},normale:{m:1,label:'Normale'},veloce:{m:1.25,label:'Veloce'}};
+const SHIELDS=5, ROCK=24, MAXLEVEL=8;
+const TYPE_LABEL={letters:'Lettere',words:'Parole',sentence:'Frasi'};
+
+/* ================= Testi, tasti, dita ================= */
+function fold(c){return String(c).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function keyOf(c){const f=fold(c);if(/^[a-z0-9]$/.test(f)||f===' ')return f;return String(c).replace(/[’‘´`]/g,"'").replace(/[“”«»]/g,'"');}
+function normSentence(s){return String(s||'').replace(/[’‘´`]/g,"'").replace(/[“”«»]/g,'"').replace(/\s+/g,' ').trim().slice(0,140);}
+function isReq(c,punct){return /[\p{L}\p{N} ]/u.test(c)||punct;}
+function bandOf(n){return n<=24?'short':(n<=44?'medium':'long');}
+
+const FINGER={};
+[['Mignolo sx','qaz'],['Anulare sx','wsx'],['Medio sx','edc'],['Indice sx','rfvtgb'],['Indice dx','yhnujm'],['Medio dx','ik'],['Anulare dx','ol'],['Mignolo dx','p'],['Pollici',' ']].forEach(p=>{p[1].split('').forEach(k=>{FINGER[k]=p[0];});});
+const FINGER_ORDER=['Mignolo sx','Anulare sx','Medio sx','Indice sx','Indice dx','Medio dx','Anulare dx','Mignolo dx','Pollici'];
+const handOf=k=>{const f=FINGER[k];return f?(/ sx$/.test(f)?'Sinistra':(/ dx$/.test(f)?'Destra':null)):null;};
+const ROWSTR=['qwertyuiop','asdfghjkl','zxcvbnm'];
+const ROWNAME=['Riga alta','Riga centrale','Riga bassa'];
+const rowOf=k=>{for(let i=0;i<3;i++)if(ROWSTR[i].indexOf(k)>=0&&k.length===1&&k!==' ')return ROWNAME[i];return null;};
+const NB={};
+ROWSTR.forEach((r,ri)=>{r.split('').forEach((ch,ci)=>{
+  const n=[],up=ROWSTR[ri-1],dn=ROWSTR[ri+1];
+  if(r[ci-1])n.push(r[ci-1]);if(r[ci+1])n.push(r[ci+1]);
+  if(up){if(up[ci])n.push(up[ci]);if(up[ci+1])n.push(up[ci+1]);}
+  if(dn){if(dn[ci-1])n.push(dn[ci-1]);if(dn[ci])n.push(dn[ci]);}
+  NB[ch]=n;
+});});
+const keyLabel=k=>k===' '?'spazio':k;
+
+/* ================= Stato ================= */
+let cfg=JSON.parse(JSON.stringify(DEFAULT_CFG));
+let opts={path:'completo',startLevel:1,speed:'normale',secs:60,upper:false,sound:true,punct:false};
+let session=null, L=null, state='setup';
+let teacherOK=false, teacherTarget='panel', keepUnlock=false, pinMode='enter';
+const cv=$('#cv'), ctx=cv.getContext('2d');
+let W=800,H=440,dpr=1,groundY=380;
+let stars=[],parts=[],lasers=[],tNow=0,running=false,lastTs=0;
+let actx=null,downloads=null,artifactCap=null,capsResolved=false;
+const LS_LOG='mt_sessions_v2', LS_CFG='mt_cfg_v2';
+
+/* ================= Utilita ================= */
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>n<10?'0'+n:''+n;
+function todayIso(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function itDate(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');return m?m[3]+'/'+m[2]+'/'+m[1]:(iso||'');}
+function hhmm(iso){if(!iso)return '–';const d=new Date(iso);return isNaN(d)?'–':pad(d.getHours())+':'+pad(d.getMinutes());}
+function fmtDur(s){s=Math.round(s);if(s<60)return s+' s';return Math.floor(s/60)+' min '+pad(s%60)+' s';}
+function mmss(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+pad(s%60);}
+const num=n=>Number(n).toLocaleString('it-IT');
+const pct=(a,b)=>b>0?Math.round(a/b*100)+'%':'–';
+const ms=v=>v==null?'–':Math.round(v)+' ms';
+const starsTxt=n=>'★★★'.slice(0,n)+'☆☆☆'.slice(0,3-n);
+const starsHtml=n=>'<span class="star">'+'★★★'.slice(0,n)+'<span class="off">'+'★★★'.slice(0,3-n)+'</span></span>';
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);return true;}catch(e){return false;}}
+function lsJson(k,def){try{const v=JSON.parse(lsGet(k));return v==null?def:v;}catch(e){return def;}}
+const slug=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'x';
+function show(id){['screen-setup','screen-game','screen-end','screen-teacher','screen-report'].forEach(s=>{$('#'+s).hidden=(s!==id);});window.scrollTo(0,0);}
+const outcomeLabel=o=>o==='superato'?'Superato':(o==='interrotto'?'Scudi finiti':'Terminato prima');
+const outcomeCls=o=>o==='superato'?'ok':(o==='interrotto'?'warn':'neu');
+async function sha(pin){
+  try{const b=new TextEncoder().encode('missione-tastiera|'+pin);const h=await crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+  catch(e){let h=5381;const s='mt|'+pin;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return 'x'+h;}
+}
+
+/* ================= Configurazione ================= */
+function mergeCfg(c){
+  const o=JSON.parse(JSON.stringify(DEFAULT_CFG));
+  if(!c||typeof c!=='object')return o;
+  if(typeof c.pinHash==='string')o.pinHash=c.pinHash;
+  if(typeof c.observer==='string')o.observer=c.observer;
+  if(Array.isArray(c.sentences))o.sentences=c.sentences.map(normSentence).filter(Boolean);
+  if(Array.isArray(c.words))o.words=c.words.map(w=>fold(w).replace(/[^a-z]/g,'')).filter(Boolean);
+  if(c.defaults&&typeof c.defaults==='object')Object.keys(o.defaults).forEach(k=>{if(c.defaults[k]!=null)o.defaults[k]=c.defaults[k];});
+  o.studentChoice=!!c.studentChoice;o.updated=+c.updated||0;
+  return o;
+}
+const sentencesList=()=>(cfg.sentences&&cfg.sentences.length?cfg.sentences:SENTENCES).map(normSentence).filter(Boolean);
+function wordsList(){const w=(cfg.words&&cfg.words.length?cfg.words:WORDS).map(x=>fold(x).replace(/[^a-z]/g,'')).filter(Boolean);return w.length?w:WORDS;}
+function sentencePool(band){
+  const all=sentencesList(),by={short:[],medium:[],long:[]};
+  all.forEach(s=>by[bandOf(s.length)].push(s));
+  const order={short:['short','medium','long'],medium:['medium','short','long'],long:['long','medium','short']}[band];
+  for(const b of order)if(by[b].length)return by[b];
+  return SENTENCES;
+}
+function levelDef(n,path){
+  const p=PLANS[path||opts.path]||PLANS.completo,pl=p[n-1],base=PLANETS[n-1];
+  const lv=Object.assign({n:n},base,pl);
+  lv.what=pl.type==='letters'?'Lettere della riga centrale':(pl.type==='words'?('Parole di '+(pl.len[0]===pl.len[1]?pl.len[0]:pl.len[0]+'-'+pl.len[1])+' lettere'):(BANDS[pl.band]));
+  if(pl.type==='letters')lv.pool=pl.letters.split('');
+  else if(pl.type==='words'){let w=wordsList().filter(x=>x.length>=pl.len[0]&&x.length<=pl.len[1]);if(w.length<6)w=WORDS.filter(x=>x.length>=pl.len[0]&&x.length<=pl.len[1]);lv.pool=w;}
+  else lv.pool=sentencePool(pl.band);
+  return lv;
+}
+async function loadConfig(){
+  let remote=null;
+  try{const r=await fetch('config.json',{cache:'no-store'});if(r.ok)remote=await r.json();}catch(e){}
+  let c=remote?mergeCfg(remote):mergeCfg(null);
+  const local=lsJson(LS_CFG,null);
+  if(local&&(+local.updated||0)>(c.updated||0))c=mergeCfg(local);
+  cfg=c;applyCfgToStudentForm();
+}
+function applyCfgToStudentForm(){
+  const d=cfg.defaults;
+  $('#optsBox').hidden=!cfg.studentChoice;
+  $('#startLevel').value=String(d.startLevel||1);$('#speed').value=d.speed||'normale';$('#secs').value=String(d.secs||60);
+  $('#optUpper').checked=!!d.upper;$('#optSound').checked=d.sound!==false;
+}
+function currentOpts(){
+  const d=cfg.defaults;
+  const o={path:d.path||'completo',startLevel:+d.startLevel||1,speed:d.speed||'normale',secs:+d.secs||60,upper:!!d.upper,sound:d.sound!==false,punct:!!d.punct};
+  if(cfg.studentChoice){o.startLevel=+$('#startLevel').value||1;o.speed=$('#speed').value;o.secs=+$('#secs').value||60;o.upper=$('#optUpper').checked;o.sound=$('#optSound').checked;}
+  return o;
+}
+
+/* ================= Suoni ================= */
+function beep(f,d,type,v,delay){
+  if(!opts.sound||!actx)return;
+  try{
+    const t=actx.currentTime+(delay||0),o=actx.createOscillator(),g=actx.createGain();
+    o.type=type||'sine';o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(v||.05,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+d+.02);
+  }catch(e){}
+}
+const SND={
+  hit(){beep(720,.06,'triangle',.04);},
+  word(){beep(660,.08,'triangle',.06);beep(990,.12,'triangle',.05,.07);},
+  err(){beep(170,.12,'sine',.05);},
+  loss(){beep(120,.3,'sawtooth',.05);},
+  up(){[523,659,784,1046].forEach((f,i)=>beep(f,.18,'triangle',.06,i*.1));},
+  fail(){[300,240,180].forEach((f,i)=>beep(f,.2,'sine',.05,i*.12));}
+};
+
+/* ================= Dati motori (aggregati) ================= */
+const zeros=n=>new Array(n).fill(0);
+const newMotor=()=>({keys:{},tr:{same:[0,0],hand:[0,0],alt:[0,0],spc:[0,0]},err:{dbl:0,adj:0,same:0,opp:0,oth:0},iki:[0,0,0],ikiBins:zeros(60),dwell:[0,0,0,0],dwBins:zeros(40),lat:[0,0],pauses:0,maxPause:0,repeats:0,conf:{},h:[0,0,0,0,0,0]});
+function mergeMotor(a,b){
+  Object.keys(b.keys).forEach(k=>{const x=a.keys[k]||(a.keys[k]=[0,0,0,0]);for(let i=0;i<4;i++)x[i]+=b.keys[k][i];});
+  Object.keys(b.tr).forEach(k=>{a.tr[k][0]+=b.tr[k][0];a.tr[k][1]+=b.tr[k][1];});
+  Object.keys(b.err).forEach(k=>{a.err[k]+=b.err[k];});
+  for(let i=0;i<3;i++)a.iki[i]+=b.iki[i];
+  for(let i=0;i<60;i++)a.ikiBins[i]+=b.ikiBins[i];
+  for(let i=0;i<4;i++)a.dwell[i]+=b.dwell[i];
+  for(let i=0;i<40;i++)a.dwBins[i]+=b.dwBins[i];
+  a.lat[0]+=b.lat[0];a.lat[1]+=b.lat[1];
+  a.pauses+=b.pauses;a.maxPause=Math.max(a.maxPause,b.maxPause);a.repeats+=b.repeats;
+  Object.keys(b.conf).forEach(k=>{a.conf[k]=(a.conf[k]||0)+b.conf[k];});
+  for(let i=0;i<6;i++)a.h[i]+=b.h[i];
+  return a;
+}
+const mergedMotor=s=>s.attempts.reduce((m,a)=>{if(a.m)mergeMotor(m,a.m);return m;},newMotor());
+function statOf(a){const n=a[0];if(!n)return{n:0,mean:null,sd:null,cv:null};const mean=a[1]/n,sd=Math.sqrt(Math.max(0,a[2]/n-mean*mean));return{n,mean,sd,cv:mean?sd/mean*100:null};}
+function medBins(bins,size){const tot=bins.reduce((s,x)=>s+x,0);if(!tot)return null;let c=0;for(let i=0;i<bins.length;i++){c+=bins[i];if(c>=tot/2)return (i+.5)*size;}return null;}
+function derive(m){
+  const ik=statOf(m.iki),dw=statOf(m.dwell);
+  const e=m.err,et=e.dbl+e.adj+e.same+e.opp+e.oth;
+  const h=m.h;
+  return {
+    ikiN:ik.n,ikiMean:ik.mean,ikiMed:medBins(m.ikiBins,50),ikiSd:ik.sd,ikiCv:ik.cv,
+    pauses:m.pauses,maxPause:m.maxPause,
+    dwN:dw.n,dwMean:dw.mean,dwMed:medBins(m.dwBins,20),dwLong:dw.n?m.dwell[3]/dw.n*100:null,
+    repeats:m.repeats,errTot:et,e:e,
+    latMean:m.lat[0]?m.lat[1]/m.lat[0]:null,latN:m.lat[0],
+    acc1:(h[0]+h[1])?h[0]/(h[0]+h[1])*100:null,acc2:(h[3]+h[4])?h[3]/(h[3]+h[4])*100:null,
+    ppm1:h[2]>=5?h[0]/5/(h[2]/60):null,ppm2:h[5]>=5?h[3]/5/(h[5]/60):null,t1:h[2],t2:h[5]
+  };
+}
+
+/* ================= Registro ================= */
+const loadLog=()=>lsJson(LS_LOG,[]);
+function saveSession(){
+  if(!session)return;
+  const copy=Object.assign({},session);delete copy.events;delete copy.live;delete copy.test;
+  const log=loadLog();let i=0;
+  for(;i<log.length;i++)if(log[i].id===copy.id){log[i]=copy;break;}
+  if(i===log.length)log.push(copy);
+  let out=log.slice(-60);
+  while(!lsSet(LS_LOG,JSON.stringify(out))&&out.length>3)out=out.slice(Math.ceil(out.length/4));
+}
+function sessionStats(s){
+  let chars=0,errs=0,best=0,maxL=0,score=0;
+  s.attempts.forEach(a=>{chars+=a.chars;errs+=a.errors;if(a.ppm>best)best=a.ppm;if(a.outcome==='superato'&&a.level>maxL)maxL=a.level;score+=a.score;});
+  return {chars,errors:errs,acc:(chars+errs)?Math.round(chars/(chars+errs)*100):0,best,maxPassed:maxL,score};
+}
+function renderLog(){
+  const full=loadLog(),log=full.slice().reverse().slice(0,12),body=$('#logBody');
+  $('#logActions').hidden=!full.length;
+  if(!log.length){body.innerHTML='<p class="empty">Nessuna missione registrata su questo computer.</p>';return;}
+  let h='<div class="tablewrap"><table><thead><tr><th>Data</th><th>Allievo</th><th>Classe</th><th class="num">Livello superato</th><th class="num">PPM migliore</th><th class="num">Precisione</th><th></th></tr></thead><tbody>';
+  log.forEach(s=>{
+    const st=sessionStats(s);
+    h+='<tr><td>'+esc(itDate(s.student.data))+'</td><td>'+esc(s.student.cognome+' '+s.student.nome)+'</td><td>'+esc(s.student.classe||'–')+'</td><td class="num">'+(st.maxPassed?st.maxPassed+' · '+esc(PLANETS[st.maxPassed-1].short):'–')+'</td><td class="num">'+st.best+'</td><td class="num">'+st.acc+'%</td><td><button class="btn small" type="button" data-open="'+esc(s.id)+'">Apri report</button></td></tr>';
+  });
+  body.innerHTML=h+'</tbody></table></div>';
+  body.querySelectorAll('[data-open]').forEach(b=>{b.onclick=()=>{const s=loadLog().find(x=>x.id===b.getAttribute('data-open'));if(s){session=s;renderReport();}};});
+}
+
+/* ================= Capacita della pagina ================= */
+function resolveCaps(){
+  const cl=window.claude;
+  const get=n=>Promise.resolve().then(()=>cl&&cl.use?cl.use(n):null).catch(()=>null);
+  Promise.all([get('downloads'),get('artifact')]).then(r=>{downloads=r[0]||null;artifactCap=r[1]||null;capsResolved=true;updateDlButtons();});
+}
+function updateDlButtons(){
+  const hide=capsResolved&&!downloads&&!!window.claude;
+  ['#btnDocx','#btnCsv','#btnKeys','#btnLogCsv','#tExport'].forEach(s=>{const b=$(s);if(b)b.hidden=hide;});
+}
+function saveFile(name,data,el){
+  if(!downloads&&!window.claude){
+    try{
+      const blob=data instanceof Blob?data:new Blob([data],{type:/\.csv$/.test(name)?'text/csv;charset=utf-8':'text/plain;charset=utf-8'});
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+      el.className='status';el.textContent='File salvato nella cartella Download: '+name;
+    }catch(e){el.className='status bad';el.textContent='Non sono riuscito a salvare il file. Usa "Copia il testo" e incollalo in un documento.';}
+    return;
+  }
+  if(!downloads){el.className='status bad';el.textContent='Da qui non posso salvare file. Usa "Copia il testo" e incollalo in un documento.';return;}
+  downloads.save({filename:name,data}).then(()=>{el.className='status';el.textContent='File pronto: '+name;},err=>{
+    el.className='status bad';
+    el.textContent=(err&&err.code==='declined')?'Salvataggio annullato. Puoi riprovare quando vuoi.':'Non sono riuscito a salvare il file. Usa "Copia il testo" e incollalo in un documento.';
+  });
+}
+
+/* ================= Modello del report ================= */
+function groupRows(M,fn,order){
+  const g={};
+  Object.keys(M.keys).forEach(k=>{const n=fn(k);if(!n)return;const v=M.keys[k],t=g[n]||(g[n]=[0,0,0,0]);for(let i=0;i<4;i++)t[i]+=v[i];});
+  return order.filter(n=>g[n]).map(n=>{const t=g[n];return [n,String(t[0]),String(t[1]),pct(t[0]-t[1],t[0]),t[3]>=5?Math.round(t[2]/t[3])+' ms':'–'];});
+}
+function insights(s,M,D){
+  const out=[],st=sessionStats(s);
+  const hand=groupRows(M,handOf,['Sinistra','Destra']);
+  if(hand.length===2){
+    const a=hand[0],b=hand[1],an=+a[1],bn=+b[1];
+    if(an>=20&&bn>=20){
+      const pa=(an-a[2])/an*100,pb=(bn-b[2])/bn*100;
+      if(Math.abs(pa-pb)>=8)out.push('La precisione è più bassa con la mano '+(pa<pb?'sinistra':'destra')+' ('+Math.round(Math.min(pa,pb))+'% contro '+Math.round(Math.max(pa,pb))+'%).');
+      const ia=parseInt(a[4],10),ib=parseInt(b[4],10);
+      if(ia&&ib&&Math.max(ia,ib)/Math.min(ia,ib)>=1.25)out.push('I tasti della mano '+(ia>ib?'sinistra':'destra')+' richiedono più tempo (circa '+Math.max(ia,ib)+' ms contro '+Math.min(ia,ib)+' ms).');
+    }
+  }
+  const fing=groupRows(M,k=>FINGER[k],FINGER_ORDER).filter(r=>+r[1]>=15);
+  if(fing.length>=3&&st.acc){
+    let worst=null;fing.forEach(r=>{const acc=(r[1]-r[2])/r[1]*100;if(!worst||acc<worst.acc)worst={n:r[0],acc};});
+    if(worst&&worst.acc<st.acc-8)out.push('Il punto più delicato è la zona del dito assegnato "'+worst.n+'", con precisione del '+Math.round(worst.acc)+'% (complessiva '+st.acc+'%).');
+  }
+  if(D.errTot>=6){
+    const e=D.e;
+    if(e.adj/D.errTot>=.4)out.push('Una parte consistente degli errori ('+Math.round(e.adj/D.errTot*100)+'%) riguarda tasti vicini a quello giusto: può indicare imprecisione nel puntare il tasto.');
+    if(e.dbl/D.errTot>=.25)out.push('Sono frequenti i doppi tocchi sullo stesso tasto ('+Math.round(e.dbl/D.errTot*100)+'% degli errori): può indicare difficoltà nel controllo della pressione o del rilascio.');
+    if(e.opp/D.errTot>=.35)out.push('Molti errori avvengono con la mano opposta a quella del tasto richiesto ('+Math.round(e.opp/D.errTot*100)+'%): può indicare confusione nella posizione dei tasti più che imprecisione del gesto.');
+  }
+  if(D.dwN>=20){
+    if(D.dwMean>260||D.dwLong>15)out.push('La tenuta del tasto è prolungata (media '+Math.round(D.dwMean)+' ms, '+Math.round(D.dwLong)+'% oltre 0,4 s).');
+    else out.push('La tenuta del tasto è nella norma per l\'allenamento (media '+Math.round(D.dwMean)+' ms).');
+  }
+  if(D.repeats>=3)out.push('Il computer ha registrato '+D.repeats+' ripetizioni automatiche di un tasto: il dito è rimasto premuto a lungo.');
+  if(D.ikiN>=20&&D.ikiCv!=null){
+    if(D.ikiCv>=60)out.push('Il ritmo è molto irregolare (variabilità '+Math.round(D.ikiCv)+'%): alternano raffiche veloci e rallentamenti.');
+    else if(D.ikiCv<=35)out.push('Il ritmo è regolare (variabilità '+Math.round(D.ikiCv)+'%).');
+  }
+  const tm=Math.max(1,(s.seconds||1)/60);
+  if(D.pauses/tm>=3)out.push('Ci sono molte esitazioni (pause oltre 2 secondi): circa '+(D.pauses/tm).toFixed(1).replace('.',',')+' al minuto.');
+  if(D.acc1!=null&&D.acc2!=null&&(D.t1>=15&&D.t2>=15)){
+    if(D.acc1-D.acc2>=8)out.push('La precisione cala nella seconda metà dei livelli ('+Math.round(D.acc1)+'% poi '+Math.round(D.acc2)+'%): possibile affaticamento.');
+    else if(D.acc2-D.acc1>=8)out.push('La precisione migliora nella seconda metà dei livelli ('+Math.round(D.acc1)+'% poi '+Math.round(D.acc2)+'%): serve un po\' di tempo per scaldarsi.');
+    if(D.ppm1&&D.ppm2&&D.ppm1/D.ppm2>=1.2)out.push('La velocità scende nella seconda metà dei livelli ('+Math.round(D.ppm1)+' poi '+Math.round(D.ppm2)+' PPM).');
+  }
+  const tr=M.tr;
+  if(tr.same[0]>=10&&tr.alt[0]>=10){const a=tr.same[1]/tr.same[0],b=tr.alt[1]/tr.alt[0];if(a/b>=1.3)out.push('Le sequenze con lo stesso dito sono più lente di quelle a mani alternate ('+Math.round(a)+' ms contro '+Math.round(b)+' ms).');}
+  if(!out.length)out.push('I dati raccolti sono ancora pochi per trarre indicazioni: servono più livelli giocati.');
+  return out;
+}
+function buildModel(s){
+  const st=sessionStats(s),M=mergedMotor(s),D=derive(M),o=s.opts,ob=s.obs||{},sec=[];
+  const pathLbl=o.path==='frasi'?'Solo frasi':'Lettere, parole e frasi';
+  sec.push({id:'dati',title:'1. Dati e contesto',color:'1D4ED8',blocks:[{t:'kv',rows:[
+    ['Allievo',s.student.cognome+' '+s.student.nome],['Classe',s.student.classe||'–'],['Data',itDate(s.student.data)],
+    ['Orario',hhmm(s.started)+(s.ended?' – '+hhmm(s.ended):'')],['Tempo di gioco',fmtDur(s.seconds)],
+    ['Percorso',pathLbl],['Velocità',SPEEDS[o.speed].label],['Durata di ogni livello',o.secs+' secondi'],
+    ['Punteggiatura richiesta',o.punct?'Sì':'No'],['Testo',o.upper?'Maiuscolo':'Come scritto']]}]});
+  const compTxt=(ob.comp&&ob.comp.length)?ob.comp.join('; '):'–';
+  sec.push({id:'obs',title:'2. Scheda di osservazione sistematica',color:'0F766E',blocks:[{t:'kv',rows:[
+    ['Osservatore',ob.osservatore||'–'],['Contesto',ob.contesto||'–'],['Postura',ob.postura||'–'],['Mano usata',ob.mano||'–'],['Modo di digitare',ob.dita||'–'],
+    ['Supporto ricevuto',ob.supporto||'–'],['Autonomia nel compito',ob.autonomia||'–'],['Attenzione sostenuta',ob.attenzione||'–'],['Affaticamento',ob.affaticamento||'–'],
+    ['Comportamenti osservati',compTxt],['Note',ob.note||'–']]}]});
+  const abc=s.abc||[];
+  sec.push({id:'abc',title:'3. Annotazioni ABC per l\'analisi funzionale',color:'6D28D9',blocks:abc.length?[{t:'table',head:['Momento','Antecedente','Comportamento','Conseguenza','Funzione ipotizzata'],rows:abc.map(r=>[r.when||'–',r.a||'–',r.b||'–',r.c||'–',r.fn||'–']),w:[14,22,24,22,18]}]:[{t:'p',text:'Nessuna annotazione inserita.'}]});
+  sec.push({id:'riep',title:'4. Riepilogo quantitativo',color:'B45309',blocks:[{t:'kv',rows:[
+    ['Livello più alto superato',st.maxPassed?st.maxPassed+' ('+PLANETS[st.maxPassed-1].short+')':'nessuno'],
+    ['Velocità migliore',st.best+' PPM'],['Precisione complessiva',st.acc+'%'],
+    ['Caratteri corretti / errori',st.chars+' / '+st.errors],['Punti',num(st.score)],
+    ['Tempo di avvio medio',D.latMean!=null?Math.round(D.latMean)+' ms ('+D.latN+' bersagli)':'–']]}]});
+  sec.push({id:'livelli',title:'5. Dettaglio per livello',color:'047857',blocks:[{t:'table',
+    head:['Livello','Esito','Stelle','Tempo','Colpiti / mancati','Precis.','PPM','Interv. medio','Variab.','Esitaz.'],
+    rows:s.attempts.map(a=>{const d=a.m?derive(a.m):null;return [a.level+' · '+a.short+' ('+TYPE_LABEL[a.type||'words'].toLowerCase()+')'+(a.attempt>1?' tent. '+a.attempt:''),outcomeLabel(a.outcome),starsTxt(a.stars),a.seconds+' s',a.hits+' / '+a.missed,a.acc+'%',String(a.ppm),d&&d.ikiMean!=null?Math.round(d.ikiMean)+' ms':'–',d&&d.ikiCv!=null?Math.round(d.ikiCv)+'%':'–',d?String(d.pauses):'–'];}),
+    w:[22,10,8,8,11,8,6,10,8,9]}]});
+  const motorBlocks=[
+    {t:'p',text:'Le tabelle si basano su ogni tasto richiesto durante il gioco. Le zone "dito" si riferiscono al dito assegnato al tasto nella dattilografia standard: se l\'allievo digita con un dito solo, vanno lette come zone della tastiera.'},
+    {t:'table',cap:'Per mano',head:['Mano','Tasti richiesti','Errori','Precisione','Intervallo medio'],rows:groupRows(M,handOf,['Sinistra','Destra'])},
+    {t:'table',cap:'Per dito assegnato',head:['Dito','Tasti richiesti','Errori','Precisione','Intervallo medio'],rows:groupRows(M,k=>FINGER[k],FINGER_ORDER)},
+    {t:'table',cap:'Per riga della tastiera',head:['Riga','Tasti richiesti','Errori','Precisione','Intervallo medio'],rows:groupRows(M,rowOf,ROWNAME)},
+    {t:'table',cap:'Passaggi tra due tasti corretti consecutivi',head:['Tipo di passaggio','Quanti','Intervallo medio'],rows:[
+      ['Stesso dito',String(M.tr.same[0]),M.tr.same[0]>=5?Math.round(M.tr.same[1]/M.tr.same[0])+' ms':'–'],
+      ['Stessa mano, dito diverso',String(M.tr.hand[0]),M.tr.hand[0]>=5?Math.round(M.tr.hand[1]/M.tr.hand[0])+' ms':'–'],
+      ['Mani alternate',String(M.tr.alt[0]),M.tr.alt[0]>=5?Math.round(M.tr.alt[1]/M.tr.alt[0])+' ms':'–'],
+      ['Con la barra spaziatrice',String(M.tr.spc[0]),M.tr.spc[0]>=5?Math.round(M.tr.spc[1]/M.tr.spc[0])+' ms':'–']]},
+    {t:'table',cap:'Ritmo, esitazioni e tenuta del tasto',head:['Misura','Valore'],rows:[
+      ['Intervallo tra tasti corretti (media / mediana)',D.ikiMean!=null?Math.round(D.ikiMean)+' ms / '+Math.round(D.ikiMed)+' ms':'–'],
+      ['Variabilità del ritmo (deviazione standard / coefficiente)',D.ikiSd!=null?Math.round(D.ikiSd)+' ms / '+Math.round(D.ikiCv)+'%':'–'],
+      ['Esitazioni (pause oltre 2 s) / pausa più lunga',D.pauses+' / '+(D.maxPause?(D.maxPause/1000).toFixed(1).replace('.',',')+' s':'–')],
+      ['Tenuta del tasto (media / mediana)',D.dwN?Math.round(D.dwMean)+' ms / '+Math.round(D.dwMed)+' ms':'–'],
+      ['Tenute oltre 0,4 s',D.dwN?Math.round(D.dwLong)+'%':'–'],
+      ['Ripetizioni automatiche del tasto (dito rimasto premuto)',String(D.repeats)],
+      ['Tempo di avvio medio verso un nuovo bersaglio',D.latMean!=null?Math.round(D.latMean)+' ms':'–']]}
+  ];
+  const e=D.e,etn=D.errTot;
+  motorBlocks.push({t:'table',cap:'Tipi di errore',head:['Tipo','Quanti','Quota'],rows:[
+    ['Tasto vicino a quello giusto',String(e.adj),pct(e.adj,etn)],['Doppio tocco dello stesso tasto',String(e.dbl),pct(e.dbl,etn)],
+    ['Stessa mano, tasto non vicino',String(e.same),pct(e.same,etn)],['Mano opposta',String(e.opp),pct(e.opp,etn)],['Altro',String(e.oth),pct(e.oth,etn)]]});
+  const crit=Object.keys(M.keys).filter(k=>M.keys[k][0]>=4&&M.keys[k][1]>0).map(k=>({k,n:M.keys[k][0],e:M.keys[k][1],r:M.keys[k][1]/M.keys[k][0]})).sort((a,b)=>b.r-a.r||b.e-a.e).slice(0,6);
+  if(crit.length)motorBlocks.push({t:'table',cap:'Tasti più critici',head:['Tasto richiesto','Richiesto','Errori','Precisione','Premuto più spesso al suo posto'],rows:crit.map(c=>{
+    let best=null;Object.keys(M.conf).forEach(x=>{if(x.split('>')[0]===c.k&&(!best||M.conf[x]>M.conf[best]))best=x;});
+    return [keyLabel(c.k),String(c.n),String(c.e),pct(c.n-c.e,c.n),best?keyLabel(best.split('>')[1])+' ('+M.conf[best]+' volte)':'–'];})});
+  const conf=Object.keys(M.conf).sort((a,b)=>M.conf[b]-M.conf[a]).slice(0,6);
+  if(conf.length)motorBlocks.push({t:'table',cap:'Confusioni più frequenti',head:['Richiesto','Premuto','Volte'],rows:conf.map(x=>{const p=x.split('>');return [keyLabel(p[0]),keyLabel(p[1]),String(M.conf[x])];})});
+  sec.push({id:'motor',title:'6. Motricità fine e controllo del tasto',color:'BE185D',blocks:motorBlocks});
+  const trow=s.attempts.filter(a=>a.m).map(a=>{const d=derive(a.m);return [a.level+' · '+a.short+(a.attempt>1?' tent. '+a.attempt:''),d.acc1!=null?Math.round(d.acc1)+'%':'–',d.acc2!=null?Math.round(d.acc2)+'%':'–',d.ppm1!=null?String(Math.round(d.ppm1)):'–',d.ppm2!=null?String(Math.round(d.ppm2)):'–',d.ikiMean!=null?Math.round(d.ikiMean)+' ms':'–'];});
+  sec.push({id:'trend',title:'7. Andamento nel tempo',color:'C2410C',blocks:[
+    {t:'p',text:'Confronto tra la prima e la seconda metà di ogni livello e tra i livelli giocati. Un calo nella seconda metà può indicare affaticamento; un miglioramento, bisogno di tempo per scaldarsi.'},
+    {t:'table',head:['Livello','Precisione 1ª metà','Precisione 2ª metà','PPM 1ª metà','PPM 2ª metà','Interv. medio'],rows:trow.length?trow:[['–','–','–','–','–','–']]}]});
+  sec.push({id:'ind',title:'8. Indicazioni automatiche',color:'4338CA',blocks:[{t:'p',text:'Sono letture indicative dei numeri, da confrontare con l\'osservazione diretta e con il quadro dell\'allievo. Non sono una valutazione.'},{t:'ul',items:insights(s,M,D)}]});
+  sec.push({id:'note',title:'Note metodologiche',color:'475569',blocks:[{t:'ul',items:[
+    'PPM: parole al minuto, con 5 caratteri corretti = 1 parola.',
+    'Intervallo medio: tempo tra due tasti corretti consecutivi, esclusi gli intervalli oltre 3 secondi.',
+    'Esitazione: pausa di più di 2 secondi tra due tasti.',
+    'Tenuta del tasto: tempo tra la pressione e il rilascio.',
+    'Errore su tasto vicino: il tasto premuto confina con quello richiesto sulla tastiera.',
+    'Il tempo di pausa del gioco non viene conteggiato.']}]});
+  return sec;
+}
+
+/* ---------- Renderer: HTML ---------- */
+function blocksHtml(blocks){
+  return blocks.map(b=>{
+    if(b.t==='p')return '<p class="t blk">'+esc(b.text)+'</p>';
+    if(b.t==='ul')return '<ul class="blk">'+b.items.map(i=>'<li>'+esc(i)+'</li>').join('')+'</ul>';
+    if(b.t==='kv')return '<dl class="kv blk">'+b.rows.map(r=>'<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd>').join('')+'</dl>';
+    if(b.t==='table')return '<div class="blk">'+(b.cap?'<p class="cap">'+esc(b.cap)+'</p>':'')+'<div class="tablewrap"><table><thead><tr>'+b.head.map((h,i)=>'<th'+(i?' class="num"':'')+'>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+b.rows.map(r=>'<tr>'+r.map((c,i)=>'<td'+(i?' class="num"':'')+'>'+esc(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div></div>';
+    return '';
+  }).join('');
+}
+/* ---------- Renderer: testo ---------- */
+function modelText(s,sections){
+  const nl='\n';let t='REPORT MISSIONE TASTIERA'+nl+'========================'+nl+nl;
+  sections.forEach(sec=>{
+    t+=sec.title.toUpperCase()+nl;
+    sec.blocks.forEach(b=>{
+      if(b.t==='p')t+=b.text+nl;
+      else if(b.t==='ul')b.items.forEach(i=>{t+='- '+i+nl;});
+      else if(b.t==='kv')b.rows.forEach(r=>{t+=r[0]+': '+r[1]+nl;});
+      else if(b.t==='table'){if(b.cap)t+=b.cap+nl;t+=b.head.join(' | ')+nl;b.rows.forEach(r=>{t+=r.join(' | ')+nl;});}
+      t+=nl;
+    });
+  });
+  return t;
+}
+/* ---------- Renderer: Word (.docx) ---------- */
+const xesc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+function wr(text,o){o=o||{};return '<w:r><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>'+(o.b?'<w:b/>':'')+(o.i?'<w:i/>':'')+(o.color?'<w:color w:val="'+o.color+'"/>':'')+'<w:sz w:val="'+Math.round((o.sz||10.5)*2)+'"/></w:rPr><w:t xml:space="preserve">'+xesc(text)+'</w:t></w:r>';}
+function wp(runs,o){o=o||{};return '<w:p><w:pPr>'+(o.keep?'<w:keepNext/>':'')+(o.shd?'<w:shd w:val="clear" w:color="auto" w:fill="'+o.shd+'"/>':'')+'<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after==null?100:o.after)+'"/>'+(o.ind?'<w:ind w:left="'+o.ind+'" w:hanging="'+(o.hang||0)+'"/>':'')+'</w:pPr>'+runs+'</w:p>';}
+function wtbl(head,rows,wpct){
+  const TW=9900,n=(head||rows[0]).length,w=wpct&&wpct.length===n?wpct:(n===2?[38,62]:[n>0?22:100].concat(new Array(n-1).fill(78/(n-1))));
+  const widths=w.map(x=>Math.round(TW*x/100));
+  const bd=['top','left','bottom','right','insideH','insideV'].map(k=>'<w:'+k+' w:val="single" w:sz="4" w:space="0" w:color="BFC6DD"/>').join('');
+  let x='<w:tbl><w:tblPr><w:tblW w:w="'+TW+'" w:type="dxa"/><w:tblBorders>'+bd+'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+widths.map(v=>'<w:gridCol w:w="'+v+'"/>').join('')+'</w:tblGrid>';
+  const cell=(t,i,o)=>'<w:tc><w:tcPr><w:tcW w:w="'+widths[i]+'" w:type="dxa"/>'+(o.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+o.fill+'"/>':'')+'</w:tcPr>'+wp(wr(t,{sz:9,b:o.b}),{after:0})+'</w:tc>';
+  if(head)x+='<w:tr><w:trPr><w:cantSplit/><w:tblHeader/></w:trPr>'+head.map((h,i)=>cell(h,i,{fill:'E3E8F8',b:true})).join('')+'</w:tr>';
+  rows.forEach(r=>{x+='<w:tr><w:trPr><w:cantSplit/></w:trPr>'+r.map((c,i)=>cell(c,i,{fill:(!head&&i===0)?'F1F4FC':null,b:(!head&&i===0)})).join('')+'</w:tr>';});
+  return x+'</w:tbl>'+wp('',{after:60});
+}
+let CRC=null;
+function crc32(b){if(!CRC){CRC=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;CRC[n]=c>>>0;}}let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){
+  const enc=new TextEncoder(),parts=[],central=[];let offset=0;
+  files.forEach(f=>{
+    const nb=enc.encode(f.name),data=enc.encode(f.text),crc=crc32(data),sz=data.length;
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);lh.setUint16(10,0,true);lh.setUint16(12,0x21,true);
+    lh.setUint32(14,crc,true);lh.setUint32(18,sz,true);lh.setUint32(22,sz,true);lh.setUint16(26,nb.length,true);lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),nb,data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,0,true);ch.setUint16(14,0x21,true);
+    ch.setUint32(16,crc,true);ch.setUint32(20,sz,true);ch.setUint32(24,sz,true);ch.setUint16(28,nb.length,true);ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer),nb);
+    offset+=30+nb.length+sz;
+  });
+  const csize=central.reduce((a,p)=>a+p.length,0),end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,csize,true);end.setUint32(16,offset,true);
+  return new Blob(parts.concat(central,[new Uint8Array(end.buffer)]),{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+function buildDocx(s){
+  const sections=buildModel(s);let b='';
+  b+=wp(wr('Report Missione Tastiera',{sz:20,b:true,color:'1E293B'}),{after:40});
+  b+=wp(wr(s.student.cognome+' '+s.student.nome+' · Classe '+(s.student.classe||'–')+' · '+itDate(s.student.data),{sz:12,color:'475569'}),{after:200});
+  sections.forEach(sec=>{
+    b+=wp(wr(sec.title,{sz:13,b:true,color:'FFFFFF'}),{shd:sec.color,before:160,after:100,keep:true});
+    sec.blocks.forEach(bl=>{
+      if(bl.t==='p')b+=wp(wr(bl.text,{sz:10}),{after:100});
+      else if(bl.t==='ul')bl.items.forEach(i=>{b+=wp(wr('•  '+i,{sz:10}),{ind:360,hang:240,after:60});});
+      else if(bl.t==='kv')b+=wtbl(null,bl.rows,[34,66]);
+      else if(bl.t==='table'){if(bl.cap)b+=wp(wr(bl.cap,{sz:10,b:true,color:sec.color}),{after:40,keep:true,before:60});b+=wtbl(bl.head,bl.rows,bl.w);}
+    });
+  });
+  const sect='<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1000" w:right="1000" w:bottom="1000" w:left="1000" w:header="500" w:footer="500" w:gutter="0"/></w:sectPr>';
+  const doc='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+b+sect+'</w:body></w:document>';
+  return zipStore([
+    {name:'[Content_Types].xml',text:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'},
+    {name:'_rels/.rels',text:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'},
+    {name:'word/document.xml',text:doc}
+  ]);
+}
+/* ---------- CSV ---------- */
+const csvEsc=v=>{v=String(v==null?'':v);return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+function csvLevels(sessions){
+  const head=['data','cognome','nome','classe','livello','destinazione','tipo','tentativo','esito','secondi','bersagli_colpiti','bersagli_mancati','caratteri_corretti','errori','precisione_%','ppm','stelle','punti','interv_medio_ms','interv_mediana_ms','interv_sd_ms','variabilita_%','esitazioni_oltre_2s','pausa_max_ms','tenuta_media_ms','tenuta_mediana_ms','tenute_oltre_400ms_%','ripetizioni_tasto','err_tasto_vicino','err_doppio_tocco','err_stessa_mano','err_mano_opposta','err_altro','avvio_medio_ms','precisione_1a_meta_%','precisione_2a_meta_%','ppm_1a_meta','ppm_2a_meta','velocita','durata_livello_s','percorso','punteggiatura','osservatore','contesto','supporto','autonomia','attenzione'];
+  const r=[head.join(';')],R=x=>x==null?'':Math.round(x);
+  sessions.forEach(s=>{const ob=s.obs||{};s.attempts.forEach(a=>{
+    const d=a.m?derive(a.m):derive(newMotor());
+    r.push([itDate(s.student.data),s.student.cognome,s.student.nome,s.student.classe,a.level,a.short,TYPE_LABEL[a.type||'words'],a.attempt,outcomeLabel(a.outcome),a.seconds,a.hits,a.missed,a.chars,a.errors,a.acc,a.ppm,a.stars,a.score,R(d.ikiMean),R(d.ikiMed),R(d.ikiSd),R(d.ikiCv),d.pauses,R(d.maxPause),R(d.dwMean),R(d.dwMed),R(d.dwLong),d.repeats,d.e.adj,d.e.dbl,d.e.same,d.e.opp,d.e.oth,R(d.latMean),R(d.acc1),R(d.acc2),R(d.ppm1),R(d.ppm2),SPEEDS[a.speed]?SPEEDS[a.speed].label:a.speed,a.duration,s.opts.path==='frasi'?'Solo frasi':'Completo',s.opts.punct?'Sì':'No',ob.osservatore,ob.contesto,ob.supporto,ob.autonomia,ob.attenzione].map(csvEsc).join(';'));
+  });});
+  return '﻿'+r.join('\r\n')+'\r\n';
+}
+function csvKeys(s){
+  const r=['livello;tentativo;t_ms;tasto_premuto;tasto_richiesto;esito;intervallo_ms;tenuta_ms;mano_richiesta;dito_richiesto;tipo_errore'];
+  (s.events||[]).forEach(e=>{r.push([e[0],e[1],e[2],keyLabel(e[3]),e[4]===''?'':keyLabel(e[4]),e[5]?'corretto':'errore',e[6],e[7],handOf(e[4])||'',FINGER[e[4]]||'',e[8]].map(csvEsc).join(';'));});
+  return '﻿'+r.join('\r\n')+'\r\n';
+}
+
+/* ================= Schermata report ================= */
+const OBS_SELECTS=[
+ ['contesto','Contesto',['','Aula','Laboratorio di informatica','Sostegno individuale','Piccolo gruppo','Altro']],
+ ['postura','Postura',['','Adeguata','Da sostenere','Da correggere']],
+ ['mano','Mano usata',['','Destra','Sinistra','Entrambe']],
+ ['dita','Modo di digitare',['','Un dito','Due dita','Più dita','Tutte le dita']],
+ ['supporto','Supporto ricevuto',['','Nessuno','Verbale','Gestuale','Fisico parziale','Fisico totale']],
+ ['autonomia','Autonomia nel compito',['','1 · Non avvia il compito','2 · Avvia con aiuto','3 · Avvia, chiede conferme','4 · Autonomo']],
+ ['attenzione','Attenzione sostenuta',['','1 · Molto scarsa','2 · Scarsa','3 · Discreta','4 · Buona','5 · Ottima']],
+ ['affaticamento','Affaticamento',['','Assente','Lieve','Evidente']]
+];
+const OBS_COMP=['Si distrae facilmente','Chiede aiuto','Mostra frustrazione','Abbandona il compito','Si autocorregge','Cerca i tasti con lo sguardo','Mostra soddisfazione'];
+const FUNZIONI=['Non determinata','Ottenere attenzione','Evitare o sfuggire al compito','Ottenere un oggetto o un\'attività','Stimolazione sensoriale','Altro'];
+function selHtml(id,opts,val){return '<select id="'+id+'">'+opts.map(o=>'<option value="'+esc(o)+'"'+(o===val?' selected':'')+'>'+(o?esc(o):'–')+'</option>').join('')+'</select>';}
+function abcFormHtml(p){
+  return '<div class="abcform"><label class="f"><span>Momento</span><input type="text" id="'+p+'when" placeholder="es. Livello 3, dopo 40 s"></label>'+
+  '<label class="f"><span>Antecedente: cosa è successo prima</span><textarea id="'+p+'a" rows="2"></textarea></label>'+
+  '<label class="f"><span>Comportamento osservato</span><textarea id="'+p+'b" rows="2"></textarea></label>'+
+  '<label class="f"><span>Conseguenza: cosa è successo dopo</span><textarea id="'+p+'c" rows="2"></textarea></label>'+
+  '<label class="f"><span>Funzione ipotizzata</span>'+selHtml(p+'fn',FUNZIONI,'Non determinata')+'</label></div>';
+}
+function readAbc(p){return {when:$('#'+p+'when').value.trim(),a:$('#'+p+'a').value.trim(),b:$('#'+p+'b').value.trim(),c:$('#'+p+'c').value.trim(),fn:$('#'+p+'fn').value};}
+function obsPanelHtml(s){
+  const ob=s.obs||{};
+  let h='<section class="panel rsec"><h3 style="color:#5EEAD4">2. Scheda di osservazione sistematica</h3><div class="obs">';
+  h+='<label class="f"><span>Osservatore</span><input type="text" id="ob_osservatore" maxlength="60" value="'+esc(ob.osservatore||'')+'"></label>';
+  OBS_SELECTS.forEach(f=>{h+='<label class="f"><span>'+f[1]+'</span>'+selHtml('ob_'+f[0],f[2],ob[f[0]]||'')+'</label>';});
+  h+='</div><p class="cap" style="margin-top:18px">Comportamenti osservati</p><div class="chkgrid">';
+  OBS_COMP.forEach((c,i)=>{h+='<label class="check"><input type="checkbox" id="obc_'+i+'"'+((ob.comp||[]).indexOf(c)>=0?' checked':'')+'> '+esc(c)+'</label>';});
+  h+='</div><label class="f" style="margin-top:14px"><span>Note</span><textarea id="ob_note" rows="3">'+esc(ob.note||'')+'</textarea></label><p class="status" id="obStatus"></p></section>';
+  return h;
+}
+function abcPanelHtml(s){
+  const abc=s.abc||[];
+  let h='<section class="panel rsec"><h3 style="color:#C4B5FD">3. Annotazioni ABC per l\'analisi funzionale</h3>';
+  h+='<p class="t">Descrivi fatti osservabili: cosa è successo prima (antecedente), cosa ha fatto l\'allievo (comportamento), cosa è successo subito dopo (conseguenza). La funzione è solo un\'ipotesi da verificare nel tempo.</p>';
+  if(abc.length){
+    h+='<div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Momento</th><th>Antecedente</th><th>Comportamento</th><th>Conseguenza</th><th>Funzione ipotizzata</th><th></th></tr></thead><tbody>';
+    abc.forEach((r,i)=>{h+='<tr><td>'+esc(r.when||'–')+'</td><td>'+esc(r.a||'–')+'</td><td>'+esc(r.b||'–')+'</td><td>'+esc(r.c||'–')+'</td><td>'+esc(r.fn||'–')+'</td><td><button class="btn small ghost" type="button" data-del="'+i+'">Elimina</button></td></tr>';});
+    h+='</tbody></table></div>';
+  }else h+='<p class="empty" style="margin-top:10px">Nessuna annotazione. Puoi aggiungerne durante il gioco con "Annota" o qui sotto.</p>';
+  h+='<details style="margin-top:14px"><summary>Aggiungi un\'annotazione</summary><div style="margin-top:12px">'+abcFormHtml('rp_')+'<div class="row" style="margin-top:12px"><button class="btn small primary" type="button" id="rpAdd">Aggiungi</button></div></div></details></section>';
+  return h;
+}
+function bindObs(){
+  const s=session;
+  const save=()=>{
+    s.obs=s.obs||{};
+    s.obs.osservatore=$('#ob_osservatore').value.trim();
+    OBS_SELECTS.forEach(f=>{s.obs[f[0]]=$('#ob_'+f[0]).value;});
+    s.obs.comp=OBS_COMP.filter((c,i)=>$('#obc_'+i).checked);
+    s.obs.note=$('#ob_note').value.trim();
+    saveSession();refreshReportText();
+    const st=$('#obStatus');if(st)st.textContent='Scheda salvata su questo computer e inserita nel report.';
+  };
+  ['#ob_osservatore','#ob_note'].forEach(id=>{$(id).addEventListener('change',save);});
+  OBS_SELECTS.forEach(f=>{$('#ob_'+f[0]).addEventListener('change',save);});
+  OBS_COMP.forEach((c,i)=>{$('#obc_'+i).addEventListener('change',save);});
+  document.querySelectorAll('[data-del]').forEach(b=>{b.onclick=()=>{s.abc.splice(+b.getAttribute('data-del'),1);saveSession();renderReport();};});
+  const add=$('#rpAdd');if(add)add.onclick=()=>{const r=readAbc('rp_');if(!(r.a||r.b||r.c))return;s.abc=s.abc||[];s.abc.push(r);saveSession();renderReport();};
+}
+function refreshReportText(){$('#repText').value=modelText(session,buildModel(session));}
+function renderReport(){
+  const s=session,st=sessionStats(s);
+  s.obs=s.obs||{};s.abc=s.abc||[];
+  if(!s.obs.osservatore&&cfg.observer)s.obs.osservatore=cfg.observer;
+  $('#repWho').textContent=s.student.cognome+' '+s.student.nome;
+  $('#repMeta').textContent='Classe '+(s.student.classe||'–')+' · '+itDate(s.student.data)+' · velocità '+SPEEDS[s.opts.speed].label.toLowerCase()+' · '+s.opts.secs+' s per livello';
+  const tiles=[['Livello superato',st.maxPassed?st.maxPassed+' <em>'+esc(PLANETS[st.maxPassed-1].short)+'</em>':'–'],['Velocità migliore',st.best+' <em>PPM</em>'],['Precisione',st.acc+'<em>%</em>'],['Tempo di gioco',esc(fmtDur(s.seconds))],['Punti',num(st.score)]];
+  $('#repTiles').innerHTML=tiles.map(t=>'<div class="tile"><small>'+t[0]+'</small><b>'+t[1]+'</b></div>').join('');
+  let h='';
+  buildModel(s).forEach(sec=>{
+    if(sec.id==='obs'){h+=obsPanelHtml(s);return;}
+    if(sec.id==='abc'){h+=abcPanelHtml(s);return;}
+    h+='<section class="panel rsec"><h3 style="color:#'+({'1D4ED8':'93C5FD','B45309':'FCD34D','047857':'6EE7B7','BE185D':'F9A8D4','C2410C':'FDBA74','4338CA':'A5B4FC','475569':'CBD5E1'}[sec.color]||'EEF2FF')+'">'+esc(sec.title)+'</h3>'+blocksHtml(sec.blocks)+'</section>';
+  });
+  $('#repBody').innerHTML=h;
+  bindObs();refreshReportText();$('#repStatus').textContent='';
+  const nx=session.live?nextLevelFor(s):0;
+  $('#btnCont').hidden=!nx;$('#btnCont').textContent=nx?('Continua dal livello '+nx):'Continua la missione';
+  $('#btnKeys').hidden=!(s.events&&s.events.length);
+  updateDlButtons();
+  if(!(s.events&&s.events.length))$('#btnKeys').hidden=true;
+  show('screen-report');
+}
+function nextLevelFor(s){
+  const last=s.attempts[s.attempts.length-1];
+  if(!last)return s.opts.startLevel;
+  if(last.outcome==='superato')return last.level<MAXLEVEL?last.level+1:0;
+  return last.level;
+}
+
+/* ================= Canvas ================= */
+function resize(){
+  const w=$('#stage').clientWidth;if(!w)return;
+  W=w;H=Math.round(Math.max(360,Math.min(500,window.innerHeight*.5)));
+  dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.style.height=H+'px';cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);groundY=H-56;
+  if(!stars.length)for(let i=0;i<90;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.6+.3,s:Math.random()*.8+.2,a:Math.random()*.6+.3});
+  if(L){L.ast.forEach(a=>{a.x=Math.max(a.hw,Math.min(W-a.hw,a.x));});if(L.sent)L.sent.x=W/2;}
+}
+const fontFor=len=>len===1?36:(W<520?22:28);
+function setFont(fs){ctx.font='700 '+fs+'px Lexend, system-ui, sans-serif';if('letterSpacing' in ctx)ctx.letterSpacing='1px';}
+const disp=w=>opts.upper?w.toUpperCase():w;
+
+function drawPlanet(p,cx,cy,r){
+  ctx.save();
+  if(p.type==='galaxy'){
+    for(let i=0;i<4;i++){
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(i*.8+(RM?0:tNow*.05));
+      const g=ctx.createRadialGradient(0,0,0,0,0,r*1.7);g.addColorStop(0,'rgba(185,166,255,.6)');g.addColorStop(1,'rgba(185,166,255,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(0,0,r*1.7,r*.42,0,0,TAU);ctx.fill();ctx.restore();
+    }
+    ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(cx,cy,Math.max(2,r*.09),0,TAU);ctx.fill();
+    ctx.restore();return;
+  }
+  if(p.type==='saturn'){
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(-.35);ctx.strokeStyle='rgba(245,223,160,.6)';ctx.lineWidth=Math.max(2,r*.12);
+    ctx.beginPath();ctx.ellipse(0,0,r*1.8,r*.5,0,0,TAU);ctx.stroke();ctx.restore();
+  }
+  const g2=ctx.createRadialGradient(cx-r*.35,cy-r*.35,r*.1,cx,cy,r);g2.addColorStop(0,p.c1);g2.addColorStop(1,p.c2);
+  ctx.fillStyle=g2;ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.fill();
+  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.clip();
+  if(p.type==='jupiter'||p.type==='neptune'){
+    for(let b=-3;b<=3;b++){ctx.fillStyle=b%2?'rgba(255,255,255,.14)':'rgba(90,40,10,.22)';ctx.fillRect(cx-r,cy+b*r*.26-r*.07,r*2,r*.14);}
+  }else if(p.type==='earth'){
+    ctx.fillStyle='rgba(60,160,100,.85)';
+    ctx.beginPath();ctx.ellipse(cx-r*.3,cy-r*.1,r*.38,r*.26,.5,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.ellipse(cx+r*.35,cy+r*.3,r*.3,r*.2,-.4,0,TAU);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.ellipse(cx+r*.1,cy-r*.45,r*.4,r*.08,0,0,TAU);ctx.fill();
+  }else{
+    ctx.fillStyle='rgba(0,0,0,.16)';
+    [[-.3,-.2,.2],[.35,.15,.14],[-.05,.4,.12],[.2,-.45,.1]].forEach(c=>{ctx.beginPath();ctx.arc(cx+c[0]*r,cy+c[1]*r,c[2]*r,0,TAU);ctx.fill();});
+  }
+  ctx.restore();
+  if(p.type==='saturn'){
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(-.35);ctx.strokeStyle='rgba(245,223,160,.85)';ctx.lineWidth=Math.max(2,r*.12);
+    ctx.beginPath();ctx.ellipse(0,0,r*1.8,r*.5,0,0,Math.PI);ctx.stroke();ctx.restore();
+  }
+  ctx.restore();
+}
+function drawRock(a,R){
+  ctx.save();ctx.translate(a.x+(a.shake>0?Math.sin(a.shake*70)*4:0),a.y);ctx.rotate(a.rot);
+  ctx.beginPath();
+  a.pts.forEach((p,i)=>{const x=p[0]*p[2]*R,y=p[1]*p[2]*R;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});
+  ctx.closePath();
+  const g=ctx.createLinearGradient(-R,-R,R,R);g.addColorStop(0,'#9AA5D6');g.addColorStop(1,'#4A5489');
+  ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#2A3265';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='rgba(0,0,0,.18)';
+  ctx.beginPath();ctx.arc(-R*.3,-R*.17,R*.2,0,TAU);ctx.fill();ctx.beginPath();ctx.arc(R*.33,R*.25,R*.16,0,TAU);ctx.fill();ctx.beginPath();ctx.arc(R*.08,-R*.46,R*.12,0,TAU);ctx.fill();
+  ctx.restore();
+}
+function drawAsteroid(a){
+  const alpha=Math.min(1,a.age/.35);ctx.save();ctx.globalAlpha=alpha;
+  const tg=ctx.createLinearGradient(a.x,a.y-70,a.x,a.y);tg.addColorStop(0,'rgba(255,194,75,0)');tg.addColorStop(1,'rgba(255,194,75,.35)');
+  ctx.fillStyle=tg;ctx.fillRect(a.x-9,a.y-70,18,70);
+  drawRock(a,ROCK);
+  const ph=a.fs+16,py=a.y+ROCK+6,locked=(L&&L.lock===a);
+  const sx=a.x+(a.shake>0?Math.sin(a.shake*70)*4:0);
+  ctx.fillStyle='rgba(8,12,36,.92)';ctx.strokeStyle=locked?COL.amber:COL.line;ctx.lineWidth=locked?3:2;
+  const bx=sx-a.tw/2-14,bw=a.tw+28;
+  ctx.beginPath();if(ctx.roundRect)ctx.roundRect(bx,py,bw,ph,12);else ctx.rect(bx,py,bw,ph);ctx.fill();ctx.stroke();
+  setFont(a.fs);ctx.textBaseline='middle';ctx.textAlign='left';
+  const typed=a.text.slice(0,a.typed),tw1=ctx.measureText(typed).width;
+  ctx.fillStyle=COL.teal;ctx.fillText(typed,sx-a.tw/2,py+ph/2+1);
+  ctx.fillStyle=COL.text;ctx.fillText(a.text.slice(a.typed),sx-a.tw/2+tw1,py+ph/2+1);
+  ctx.restore();
+}
+function drawSentenceRock(S){
+  const alpha=Math.min(1,S.age/.35);ctx.save();ctx.globalAlpha=alpha;
+  const tg=ctx.createLinearGradient(S.x,S.y-110,S.x,S.y);tg.addColorStop(0,'rgba(255,194,75,0)');tg.addColorStop(1,'rgba(255,194,75,.35)');
+  ctx.fillStyle=tg;ctx.fillRect(S.x-16,S.y-110,32,110);
+  drawRock(S,S.R);
+  const frac=S.chars.length?S.idx/S.chars.length:0;
+  ctx.strokeStyle=COL.line;ctx.lineWidth=5;ctx.beginPath();ctx.arc(S.x,S.y,S.R+10,0,TAU);ctx.stroke();
+  ctx.strokeStyle=COL.teal;ctx.beginPath();ctx.arc(S.x,S.y,S.R+10,-Math.PI/2,-Math.PI/2+TAU*frac);ctx.stroke();
+  ctx.restore();
+}
+function drawShip(){
+  const sx=W/2,sy=groundY-6;let ang=0;
+  const tgt=L&&(L.sent||L.lock);
+  if(tgt)ang=Math.max(-.7,Math.min(.7,Math.atan2(tgt.x-sx,sy-tgt.y)));
+  ctx.save();ctx.translate(sx+(L&&L.wobble>0?Math.sin(L.wobble*60)*3:0),sy);ctx.rotate(ang);
+  const fl=RM?10:8+Math.random()*8;
+  ctx.fillStyle='#FF7A7A';ctx.beginPath();ctx.moveTo(-6,10);ctx.lineTo(6,10);ctx.lineTo(0,10+fl+6);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#FFC24B';ctx.beginPath();ctx.moveTo(-14,4);ctx.lineTo(-24,22);ctx.lineTo(-8,14);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(14,4);ctx.lineTo(24,22);ctx.lineTo(8,14);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#EEF2FF';ctx.beginPath();ctx.moveTo(0,-34);ctx.quadraticCurveTo(18,-14,14,12);ctx.lineTo(-14,12);ctx.quadraticCurveTo(-18,-14,0,-34);ctx.closePath();ctx.fill();
+  ctx.fillStyle=COL.teal;ctx.beginPath();ctx.arc(0,-8,6.5,0,TAU);ctx.fill();
+  ctx.restore();
+}
+function draw(){
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0A1030');g.addColorStop(1,'#10194A');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  stars.forEach(s=>{ctx.globalAlpha=s.a;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,TAU);ctx.fill();});
+  ctx.globalAlpha=1;
+  if(L){
+    const prog=Math.min(1,L.elapsed/L.dur),pr=18+prog*54,px=W-Math.max(90,pr+24),py=Math.max(86,pr+22);
+    ctx.globalAlpha=.92;drawPlanet(L.lvl.planet,px,py,pr);ctx.globalAlpha=1;
+    ctx.font='600 13px Lexend, system-ui, sans-serif';if('letterSpacing' in ctx)ctx.letterSpacing='1px';
+    ctx.fillStyle=COL.muted;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+    ctx.fillText(L.lvl.planet.label.toUpperCase(),px,py+pr+22);
+  }
+  ctx.fillStyle='#16205A';ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(0,groundY+16);ctx.quadraticCurveTo(W/2,groundY-16,W,groundY+16);ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=(L&&L.flash>0)?COL.coral:COL.teal;ctx.globalAlpha=(L&&L.flash>0)?1:.5;ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(0,groundY+16);ctx.quadraticCurveTo(W/2,groundY-16,W,groundY+16);ctx.stroke();ctx.globalAlpha=1;
+  if(L){L.ast.forEach(drawAsteroid);if(L.sent)drawSentenceRock(L.sent);}
+  lasers.forEach(l=>{ctx.globalAlpha=Math.min(1,l.life/.1);ctx.strokeStyle=COL.teal;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(l.x1,l.y1);ctx.lineTo(l.x2,l.y2);ctx.stroke();});
+  ctx.globalAlpha=1;
+  drawShip();
+  parts.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,TAU);ctx.fill();});
+  ctx.globalAlpha=1;
+  if(L&&L.toast&&L.toast.t>0){
+    ctx.globalAlpha=Math.min(1,L.toast.t*2);ctx.fillStyle=COL.amber;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='700 '+(W<520?22:30)+'px Lexend, system-ui, sans-serif';if('letterSpacing' in ctx)ctx.letterSpacing='0px';
+    ctx.fillText(L.toast.txt,W/2,H*.45);ctx.globalAlpha=1;
+  }
+  if(L&&state==='ready'){
+    ctx.fillStyle='rgba(5,8,28,.6)';ctx.fillRect(0,0,W,H);
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle=COL.teal;ctx.font='600 15px Lexend, system-ui, sans-serif';if('letterSpacing' in ctx)ctx.letterSpacing='3px';
+    ctx.fillText('LIVELLO '+L.lvl.n+' DI '+MAXLEVEL,W/2,H/2-64);
+    ctx.fillStyle=COL.amber;ctx.font='700 '+(W<520?26:38)+'px Lexend, system-ui, sans-serif';if('letterSpacing' in ctx)ctx.letterSpacing='0px';
+    ctx.fillText(L.lvl.title,W/2,H/2-18);
+    ctx.fillStyle=COL.text;ctx.font='500 '+(W<520?16:20)+'px Lexend, system-ui, sans-serif';
+    ctx.fillText(L.lvl.what,W/2,H/2+28);
+    ctx.fillStyle=COL.muted;ctx.font='500 15px Lexend, system-ui, sans-serif';
+    ctx.fillText('Pronto in '+Math.ceil(L.ready)+'…',W/2,H/2+66);
+  }
+}
+function boom(x,y,color,n){
+  const k=RM?5:n||14;
+  for(let i=0;i<k;i++){const a=Math.random()*TAU,sp=40+Math.random()*130;parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:.6,max:.6,r:2+Math.random()*3,c:color});}
+}
+
+/* ================= Frasi (pannello testo) ================= */
+let spans=[];
+function sentenceInit(S){
+  const box=$('#sentence');box.className='sentence'+(opts.upper?' upper':'');box.innerHTML='';spans=[];
+  S.chars.forEach((c,i)=>{const sp=document.createElement('span');sp.textContent=c;sp.className=isReq(c,opts.punct)?'c':'s';box.appendChild(sp);spans.push(sp);});
+  sentenceMark(S);
+}
+function sentenceMark(S,err){
+  spans.forEach((sp,i)=>{
+    const req=isReq(S.chars[i],opts.punct);
+    sp.className=i<S.idx?(req?'d':'s'):(i===S.idx?'cur'+(err?' err':''):(req?'c':'s'));
+  });
+}
+function sentenceWait(txt){const b=$('#sentence');b.className='sentence';b.innerHTML='<span class="wait">'+esc(txt)+'</span>';spans=[];}
+function skipNonReq(S){while(S.idx<S.chars.length&&!isReq(S.chars[S.idx],opts.punct))S.idx++;}
+function spawnSentence(){
+  const pool=L.lvl.pool.filter(x=>L.history.indexOf(x)<0),p=pool.length?pool:L.lvl.pool;
+  const text=p[Math.floor(Math.random()*p.length)];
+  L.history.push(text);if(L.history.length>5)L.history.shift();
+  const chars=text.split(''),req=chars.filter(c=>isReq(c,opts.punct)).length;
+  const prog=Math.min(1,L.elapsed/L.dur),cps=L.lvl.cps*SPEEDS[opts.speed].m*(1+.15*prog);
+  const T=Math.max(6,req/cps+3.5);
+  const pts=[];for(let i=0;i<10;i++){const an=i/10*TAU;pts.push([Math.cos(an),Math.sin(an),.84+Math.random()*.26]);}
+  L.unit++;
+  L.sent={id:L.unit,text,chars,idx:0,age:0,T,x:W/2,y:50,R:42,rot:Math.random()*TAU,spin:(Math.random()-.5)*.8,shake:0,pts,t0:L.elapsed*1000,firstKey:false};
+  skipNonReq(L.sent);sentenceInit(L.sent);
+}
+
+/* ================= Livelli ================= */
+function speedNow(){const prog=L?Math.min(1,L.elapsed/L.dur):0;return SPEEDS[opts.speed].m*(1+.25*prog);}
+function startLevel(n){
+  const lvl=levelDef(n,opts.path);
+  const tries=session.attempts.filter(a=>a.level===n).length+1;
+  L={lvl,plan:lvl,n,attempt:tries,dur:opts.secs,elapsed:0,spawnT:0,ast:[],sent:null,sentDelay:.3,lock:null,hits:0,missed:0,chars:0,errors:0,shields:SHIELDS,score:0,ready:2.6,wobble:0,flash:0,history:[],unit:0,m:newMotor(),prevT:null,prevOk:false,prevKey:'',prevTarget:'',prevUnit:0,down:{},toast:null};
+  parts=[];lasers=[];state='ready';
+  $('#overlay').hidden=true;$('#btnPause').textContent='Pausa';
+  $('#hudLevel').textContent='Livello '+n+' · '+lvl.title;
+  const box=$('#sentence');
+  if(lvl.type==='sentence'){box.hidden=false;sentenceWait('La frase arriva tra poco…');}else{box.hidden=true;box.innerHTML='';}
+  updateHud(true);resize();
+  if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+  startLoop();
+}
+function trySpawn(){
+  const used={};
+  L.ast.forEach(a=>{used[a.text[0].toLowerCase()]=1;});
+  let pool=L.lvl.pool.filter(w=>!used[w[0]]&&L.history.indexOf(w)<0);
+  if(!pool.length)pool=L.lvl.pool.filter(w=>!used[w[0]]);
+  if(!pool.length)return false;
+  const word=pool[Math.floor(Math.random()*pool.length)],text=disp(word),fs=fontFor(word.length);
+  setFont(fs);const tw=ctx.measureText(text).width,hw=Math.max(tw/2+16,ROCK+6);
+  let x=0,ok=false;
+  for(let i=0;i<14&&!ok;i++){
+    x=hw+8+Math.random()*Math.max(1,W-2*hw-16);ok=true;
+    for(const b of L.ast){if(b.y<220&&Math.abs(b.x-x)<(b.hw+hw+8)){ok=false;break;}}
+  }
+  if(!ok)return false;
+  const pts=[];for(let i=0;i<9;i++){const an=i/9*TAU;pts.push([Math.cos(an),Math.sin(an),.82+Math.random()*.3]);}
+  L.unit++;
+  L.ast.push({id:L.unit,word,text,x,y:ROCK+6,k:.94+Math.random()*.12,rot:Math.random()*TAU,spin:(Math.random()-.5)*1.2,age:0,shake:0,typed:0,fs,tw,hw,pts,born:L.elapsed*1000});
+  L.history.push(word);if(L.history.length>6)L.history.shift();
+  return true;
+}
+function lose(x){
+  L.missed++;L.shields--;L.flash=.35;boom(x,groundY,COL.coral,16);SND.loss();updateHud(true);
+}
+function update(dt){
+  tNow+=dt;
+  stars.forEach(s=>{if(!RM){s.y+=s.s*dt*(.004+(L?L.n*.0015:0));if(s.y>1)s.y-=1;}});
+  parts.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=60*dt;p.life-=dt;});parts=parts.filter(p=>p.life>0);
+  lasers.forEach(l=>{l.life-=dt;});lasers=lasers.filter(l=>l.life>0);
+  if(!L)return;
+  L.wobble=Math.max(0,L.wobble-dt);L.flash=Math.max(0,L.flash-dt);if(L.toast)L.toast.t-=dt;
+  if(state==='ready'){L.ready-=dt;if(L.ready<=0){state='playing';L.spawnT=0;L.prevT=null;}return;}
+  if(state!=='playing')return;
+  const half=L.dur/2,h=L.m.h;
+  if(L.elapsed<half)h[2]+=dt;else h[5]+=dt;
+  L.elapsed+=dt;
+  if(L.lvl.type==='sentence'){
+    if(!L.sent){L.sentDelay-=dt;if(L.sentDelay<=0)spawnSentence();}
+    else{
+      const S=L.sent;S.age+=dt;S.rot+=S.spin*dt;S.shake=Math.max(0,S.shake-dt);
+      S.y=S.R+8+(groundY-46-(S.R+8))*Math.min(1,S.age/S.T);
+      if(S.age>=S.T){
+        const x=S.x;L.sent=null;L.sentDelay=1.4;sentenceWait('Prossima frase in arrivo…');lose(x);
+        if(L.shields<=0){endLevel('interrotto');return;}
+      }
+    }
+  }else{
+    const sp=speedNow();
+    L.spawnT-=dt;
+    if(L.spawnT<=0&&L.ast.length<6){const ok=trySpawn();L.spawnT=ok?(L.lvl.spawn/SPEEDS[opts.speed].m)/(1+.2*Math.min(1,L.elapsed/L.dur)):.4;}
+    for(let i=L.ast.length-1;i>=0;i--){
+      const a=L.ast[i];
+      a.age+=dt;a.rot+=a.spin*dt;a.shake=Math.max(0,a.shake-dt);
+      a.y+=(groundY/L.lvl.fall)*sp*a.k*dt;
+      if(a.y+ROCK+6+a.fs+16>=groundY){
+        L.ast.splice(i,1);if(L.lock===a)L.lock=null;
+        lose(a.x);
+        if(L.shields<=0){endLevel('interrotto');return;}
+      }
+    }
+  }
+  if(L.elapsed>=L.dur){endLevel('superato');return;}
+  updateHud(false);
+}
+function stats(){
+  const tot=L.chars+L.errors;
+  return {acc:tot?Math.round(L.chars/tot*100):100,ppm:L.elapsed>=1?Math.round(L.chars/5/(L.elapsed/60)):0};
+}
+function attemptRecord(outcome,stars){
+  const st=stats();
+  return {level:L.n,short:L.lvl.short,type:L.lvl.type,attempt:L.attempt,outcome,seconds:Math.round(L.elapsed),hits:L.hits,missed:L.missed,chars:L.chars,errors:L.errors,acc:st.acc,ppm:st.ppm,stars,score:L.score,speed:opts.speed,duration:L.dur,m:L.m};
+}
+function endLevel(outcome){
+  const st=stats(),secs=Math.round(L.elapsed);
+  const stars=outcome==='superato'?(st.acc>=95?3:(st.acc>=85?2:1)):0;
+  session.attempts.push(attemptRecord(outcome,stars));session.seconds+=secs;saveSession();
+  L.ast.forEach(a=>boom(a.x,a.y,outcome==='superato'?COL.amber:COL.coral,10));
+  if(L.sent)boom(L.sent.x,L.sent.y,outcome==='superato'?COL.amber:COL.coral,24);
+  L.ast=[];L.sent=null;L.lock=null;updateHud(true);
+  if(L.lvl.type==='sentence')sentenceWait(outcome==='superato'?'Livello completato.':'Livello interrotto.');
+  state='levelend';
+  let h='';const n=L.n,last=n>=MAXLEVEL;
+  if(outcome==='superato'){
+    SND.up();
+    h+='<p class="eyebrow">'+esc(L.lvl.title)+'</p><h2>'+(last?'Missione completata!':'Livello '+n+' superato!')+'</h2>';
+    h+='<div class="starline" aria-label="'+stars+' stelle su 3">'+'★★★'.slice(0,stars)+'<span class="off">'+'★★★'.slice(0,3-stars)+'</span></div>';
+    h+='<p class="muted">'+(stars===3?'Precisione da campione!':(stars===2?'Molto bene. Con ancora più precisione arrivi a tre stelle.':'Missione compiuta. Rallenta un po\' e punta alla precisione.'))+'</p>';
+  }else{
+    SND.fail();
+    h+='<p class="eyebrow">'+esc(L.lvl.title)+'</p><h2>Scudi finiti</h2><p class="muted">Nessun problema, capita a tutti. Puoi riprovare lo stesso livello, anche più piano.</p>';
+  }
+  h+='<div class="mini"><div><small>Colpiti</small><b>'+L.hits+'</b></div><div><small>Mancati</small><b>'+L.missed+'</b></div><div><small>Precisione</small><b>'+st.acc+'%</b></div><div><small>PPM</small><b>'+st.ppm+'</b></div><div><small>Tempo</small><b>'+secs+' s</b></div><div><small>Punti</small><b>'+num(L.score)+'</b></div></div><div class="btns">';
+  if(outcome==='superato'){
+    h+=last?'<button class="btn primary" id="ovEnd" type="button">Concludi la missione</button>':'<button class="btn primary" id="ovNext" type="button">Livello successivo</button><button class="btn ghost" id="ovEnd" type="button">Termina la missione</button>';
+  }else{
+    h+='<button class="btn primary" id="ovRetry" type="button">Riprova il livello</button>'+(opts.speed!=='tranquilla'?'<button class="btn" id="ovSlow" type="button">Riprova più piano</button>':'')+'<button class="btn ghost" id="ovEnd" type="button">Termina la missione</button>';
+  }
+  h+='</div>';
+  showCard(h);
+  let b;
+  if((b=$('#ovNext')))b.onclick=()=>startLevel(n+1);
+  if((b=$('#ovRetry')))b.onclick=()=>startLevel(n);
+  if((b=$('#ovSlow')))b.onclick=()=>{opts.speed='tranquilla';startLevel(n);};
+  if((b=$('#ovEnd')))b.onclick=finishSession;
+  const f=$('#card .btn.primary');if(f)f.focus();
+}
+function showCard(html){$('#card').innerHTML=html;$('#overlay').hidden=false;}
+function pause(){
+  if(state!=='playing')return;
+  state='paused';
+  showCard('<p class="eyebrow">Pausa</p><h2>Missione in pausa</h2><p class="muted">Il tempo è fermo. Premi Invio per continuare.</p><div class="btns"><button class="btn primary" id="ovGo" type="button">Continua</button><button class="btn ghost" id="ovStop" type="button">Termina la missione</button></div>');
+  $('#ovGo').onclick=resume;$('#ovStop').onclick=finishSession;$('#ovGo').focus();
+  $('#btnPause').textContent='Continua';
+}
+function resume(){
+  if(state!=='paused')return;
+  state='playing';L.prevT=null;$('#overlay').hidden=true;$('#btnPause').textContent='Pausa';
+  if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+}
+function openNote(){
+  if(!L||(state!=='playing'&&state!=='paused'&&state!=='ready'))return;
+  if(state==='playing')state='paused';
+  const when='Livello '+L.n+' · '+mmss(L.elapsed)+' dall\'inizio';
+  showCard('<p class="eyebrow">Annotazione ABC</p><h2>Annota un\'osservazione</h2><p class="muted">Il gioco è in pausa. Descrivi fatti osservabili.</p>'+abcFormHtml('nt_')+'<div class="btns"><button class="btn primary" id="ntSave" type="button">Salva e continua</button><button class="btn ghost" id="ntCancel" type="button">Annulla</button></div>');
+  $('#nt_when').value=when;
+  $('#ntSave').onclick=()=>{const r=readAbc('nt_');if(r.a||r.b||r.c){session.abc=session.abc||[];session.abc.push(r);saveSession();}if(state==='paused'&&L&&L.elapsed>0||state==='paused')resume();};
+  $('#ntCancel').onclick=()=>{resume();};
+  $('#nt_a').focus();
+}
+function finishSession(){
+  if(L&&(state==='playing'||state==='paused'||state==='ready')){
+    const secs=Math.round(L.elapsed);
+    if(secs>=3||L.chars>0){session.attempts.push(attemptRecord('terminato',0));session.seconds+=secs;}
+  }
+  stopLoop();state='end';$('#overlay').hidden=true;L=null;
+  session.ended=new Date().toISOString();saveSession();
+  renderEnd();
+}
+function renderEnd(){
+  const st=sessionStats(session);
+  $('#endTitle').textContent='Bel lavoro, '+session.student.nome+'!';
+  $('#endText').textContent=st.maxPassed?('Hai superato il livello '+st.maxPassed+' ('+PLANETS[st.maxPassed-1].short+').'):'Hai fatto il tuo primo allenamento.';
+  $('#endMini').innerHTML='<div><small>Livello superato</small><b>'+(st.maxPassed||'–')+'</b></div><div><small>PPM migliore</small><b>'+st.best+'</b></div><div><small>Precisione</small><b>'+st.acc+'%</b></div>';
+  const nx=nextLevelFor(session);
+  $('#endCont').hidden=!nx;
+  show('screen-end');
+}
+
+/* ================= Input ================= */
+function onKeyDown(e){
+  const ae=document.activeElement,typing=ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName||'');
+  if(state==='paused'&&e.key==='Enter'&&!typing&&ae===document.body&&$('#ovGo')){resume();return;}
+  if(state!=='playing')return;
+  if(e.key==='Escape'){pause();return;}
+  if(e.ctrlKey||e.metaKey||e.altKey||typing)return;
+  if(e.key.length!==1)return;
+  e.preventDefault();
+  if(e.repeat){L.m.repeats++;return;}
+  const tms=L.elapsed*1000,iki=L.prevT==null?null:tms-L.prevT;L.prevT=tms;
+  const kp=keyOf(e.key);
+  if(L.lvl.type==='sentence'){
+    const S=L.sent;if(!S)return;
+    if(S.idx>=S.chars.length)return;
+    const tc=S.chars[S.idx],kt=keyOf(tc),ok=(kp===kt);
+    if(!S.firstKey){S.firstKey=true;L.m.lat[0]++;L.m.lat[1]+=tms-S.t0;}
+    registerKey(e,kp,kt,[kt],ok,iki,tms,S.id);
+    if(ok){
+      S.idx++;L.chars++;L.score+=10*L.n;skipNonReq(S);
+      lasers.push({x1:W/2,y1:groundY-40,x2:S.x,y2:S.y,life:.1});SND.hit();
+      if(S.idx>=S.chars.length){
+        L.hits++;L.score+=5*S.chars.length*L.n;boom(S.x,S.y,COL.amber,34);SND.word();
+        L.toast={t:1,txt:'Frase completata!'};L.sent=null;L.sentDelay=.9;sentenceMark(S);
+        setTimeout(()=>{if(L&&!L.sent&&state==='playing')sentenceWait('Prossima frase in arrivo…');},350);
+      }else sentenceMark(S);
+    }else{
+      L.errors++;L.wobble=.25;S.shake=.25;SND.err();sentenceMark(S,true);
+      setTimeout(()=>{if(L&&L.sent===S)sentenceMark(S);},260);
+    }
+    updateHud(true);return;
+  }
+  /* lettere e parole */
+  if(!/^[a-z]$/.test(kp))return;
+  let a=L.lock,cands;
+  if(!a){
+    cands=Array.from(new Set(L.ast.map(x=>x.word[0])));
+    let best=null;L.ast.forEach(x=>{if(x.word[0]===kp&&(!best||x.y>best.y))best=x;});
+    if(!best){registerKey(e,kp,'',cands,false,iki,tms,0);L.errors++;L.wobble=.25;SND.err();updateHud(true);return;}
+    a=L.lock=best;L.m.lat[0]++;L.m.lat[1]+=tms-a.born;
+  }
+  const kt=a.word[a.typed],ok=(kp===kt);
+  registerKey(e,kp,kt,[kt],ok,iki,tms,a.id);
+  if(ok){
+    a.typed++;L.chars++;L.score+=10*L.n;
+    lasers.push({x1:W/2,y1:groundY-40,x2:a.x,y2:a.y,life:.1});SND.hit();
+    if(a.typed>=a.word.length){
+      L.hits++;L.score+=a.word.length>1?20*a.word.length*L.n:10*L.n;boom(a.x,a.y,COL.amber,18);SND.word();
+      L.ast.splice(L.ast.indexOf(a),1);L.lock=null;
+    }
+  }else{L.errors++;L.wobble=.25;a.shake=.25;SND.err();}
+  updateHud(true);
+}
+function registerKey(e,kp,kt,cands,ok,iki,tms,unit){
+  const m=L.m,evt=[L.n,L.attempt,Math.round(tms),kp,kt,ok?1:0,iki==null?'':Math.round(iki),'',''];
+  if(iki!=null&&iki>2000){m.pauses++;if(iki>m.maxPause)m.maxPause=iki;}
+  const ikiOk=(ok&&L.prevOk&&iki!=null&&iki<=3000&&unit===L.prevUnit)?iki:null;
+  if(kt&&/^[a-z0-9 ]$/.test(kt)||kt&&kt.length===1){
+    const k=m.keys[kt]||(m.keys[kt]=[0,0,0,0]);k[0]++;if(!ok)k[1]++;
+    if(ikiOk!=null){k[2]+=ikiOk;k[3]++;}
+  }
+  if(ikiOk!=null){
+    m.iki[0]++;m.iki[1]+=ikiOk;m.iki[2]+=ikiOk*ikiOk;m.ikiBins[Math.min(59,Math.floor(ikiOk/50))]++;
+    const pk=L.prevTarget,fa=FINGER[pk],fb=FINGER[kt];
+    let ty=null;
+    if(pk===' '||kt===' ')ty='spc';else if(fa&&fb)ty=fa===fb?'same':(handOf(pk)===handOf(kt)?'hand':'alt');
+    if(ty){m.tr[ty][0]++;m.tr[ty][1]+=ikiOk;}
+  }
+  const hh=L.elapsed<L.dur/2?0:3;
+  if(ok)m.h[hh]++;else m.h[hh+1]++;
+  if(!ok){
+    let t='oth';
+    if(kp===L.prevKey&&L.prevKey)t='dbl';
+    else if(cands.some(c=>(NB[kp]||[]).indexOf(c)>=0))t='adj';
+    else if(handOf(kp)&&cands.some(c=>handOf(c)===handOf(kp)))t='same';
+    else if(handOf(kp)&&cands.some(c=>handOf(c)&&handOf(c)!==handOf(kp)))t='opp';
+    m.err[t]++;evt[8]=({dbl:'doppio tocco',adj:'tasto vicino',same:'stessa mano',opp:'mano opposta',oth:'altro'})[t];
+    if(kt&&cands.length===1&&/^[a-z ]$/.test(kt)&&/^[a-z ]$/.test(kp)){const c=kt+'>'+kp;m.conf[c]=(m.conf[c]||0)+1;}
+  }
+  session.events.push(evt);
+  L.down[e.code]={evt,t0:performance.now(),m,n:L.n,att:L.attempt};
+  L.prevOk=ok;L.prevKey=kp;L.prevTarget=kt;L.prevUnit=unit;
+}
+function onKeyUp(e){
+  if(!L)return;
+  const d=L.down[e.code];if(!d)return;
+  delete L.down[e.code];
+  const dw=performance.now()-d.t0;
+  if(dw>3000||state!=='playing'||d.n!==L.n||d.att!==L.attempt)return;
+  d.evt[7]=Math.round(dw);
+  const m=d.m;m.dwell[0]++;m.dwell[1]+=dw;m.dwell[2]+=dw*dw;if(dw>400)m.dwell[3]++;m.dwBins[Math.min(39,Math.floor(dw/20))]++;
+}
+
+/* ================= HUD ================= */
+const hudCache={};
+function setTxt(id,v){if(hudCache[id]!==v){hudCache[id]=v;$('#'+id).textContent=v;}}
+function updateHud(force){
+  if(!L)return;
+  const st=stats();
+  setTxt('timeText',mmss(L.dur-L.elapsed));
+  const w=Math.min(100,L.elapsed/L.dur*100).toFixed(1)+'%';if(hudCache.fill!==w){hudCache.fill=w;$('#timeFill').style.width=w;}
+  setTxt('hudScore',num(L.score));
+  setTxt('hudPpm',L.elapsed>=8?String(st.ppm):'–');
+  setTxt('hudAcc',(L.chars+L.errors)>0?st.acc+'%':'–');
+  const sp=L.lvl.v*SPEEDS[opts.speed].m*(1+.2*Math.min(1,L.elapsed/L.dur));
+  setTxt('hudSpeed','×'+sp.toFixed(1).replace('.',','));
+  if(force||hudCache.sh!==L.shields){hudCache.sh=L.shields;let h='';for(let i=0;i<SHIELDS;i++)h+='<i class="'+(i<L.shields?'':'off')+'"></i>';$('#shields').innerHTML=h;}
+}
+
+/* ================= Ciclo ================= */
+function frame(ts){
+  if(!running)return;
+  const dt=Math.min(.05,(ts-lastTs)/1000||0);lastTs=ts;
+  update(dt);draw();
+  requestAnimationFrame(frame);
+}
+function startLoop(){if(running)return;running=true;lastTs=performance.now();requestAnimationFrame(frame);}
+function stopLoop(){running=false;}
+
+/* ================= Avvio allievo ================= */
+function onSubmit(e){
+  e.preventDefault();
+  const nome=$('#nome').value.trim(),cognome=$('#cognome').value.trim(),classe=$('#classe').value.trim(),data=$('#data').value||todayIso();
+  const msg=$('#formMsg');
+  if(!nome||!cognome){msg.textContent='Scrivi nome e cognome per iniziare.';($('#nome').value.trim()?$('#cognome'):$('#nome')).focus();return;}
+  msg.textContent='';
+  opts=currentOpts();
+  if(!keepUnlock)teacherOK=false;
+  keepUnlock=false;
+  try{if(!actx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)actx=new AC();}if(actx&&actx.state==='suspended')actx.resume();}catch(err){}
+  session={id:'s'+Date.now(),started:new Date().toISOString(),student:{nome,cognome,classe,data},opts:{path:opts.path,startLevel:opts.startLevel,speed:opts.speed,secs:opts.secs,punct:opts.punct,upper:opts.upper},attempts:[],seconds:0,obs:{},abc:[],events:[],live:true};
+  enterGame(opts.startLevel);
+}
+function enterGame(n){
+  $('#hudName').textContent=session.student.nome+' '+session.student.cognome+(session.student.classe?' · '+session.student.classe:'');
+  show('screen-game');loadColors();
+  const go=()=>{resize();startLevel(n);};
+  if(document.fonts&&document.fonts.load){Promise.all([document.fonts.load('700 28px Lexend'),document.fonts.load('600 15px Lexend')]).then(go,go);}else go();
+}
+
+/* ================= Area insegnante ================= */
+function openTeacher(target){
+  teacherTarget=target||'panel';
+  if(teacherOK){afterUnlock();return;}
+  show('screen-teacher');$('#tGate').hidden=false;$('#tPanel').hidden=true;
+  $('#pinIn').value='';$('#gateMsg').textContent='';
+  if(!cfg.pinHash){pinMode='create';$('#gateTitle').textContent='Crea il PIN';$('#gateText').textContent='È la prima volta: scegli un PIN di 4-12 cifre. Serve per entrare nell\'area insegnante e vedere i report.';$('#gateLabel').textContent='Nuovo PIN';$('#gateOk').textContent='Crea il PIN';}
+  else{pinMode='enter';$('#gateTitle').textContent='Area insegnante';$('#gateText').textContent='Inserisci il PIN.';$('#gateLabel').textContent='PIN';$('#gateOk').textContent='Entra';}
+  setTimeout(()=>$('#pinIn').focus(),0);
+}
+async function gateSubmit(){
+  const pin=$('#pinIn').value.trim(),msg=$('#gateMsg');
+  if(pinMode==='create'){
+    if(!/^\d{4,12}$/.test(pin)){msg.textContent='Il PIN deve avere da 4 a 12 cifre.';return;}
+    cfg.pinHash=await sha(pin);teacherOK=true;await saveCfg(true,true);afterUnlock();return;
+  }
+  const h=await sha(pin);
+  if(h!==cfg.pinHash){msg.textContent='PIN non corretto.';$('#pinIn').select();return;}
+  teacherOK=true;afterUnlock();
+}
+function afterUnlock(){
+  if(teacherTarget==='report'&&session)renderReport();else showPanel();
+}
+function fillTeacherForm(){
+  $('#tSentences').value=sentencesList().join('\n');
+  $('#tWords').value=wordsList().join(' ');
+  const d=cfg.defaults;
+  $('#tPath').value=d.path||'completo';$('#tStart').value=String(d.startLevel||1);$('#tSpeed').value=d.speed||'normale';$('#tSecs').value=String(d.secs||60);
+  $('#tObserver').value=cfg.observer||'';
+  $('#tPunct').checked=!!d.punct;$('#tUpper').checked=!!d.upper;$('#tSound').checked=d.sound!==false;$('#tChoice').checked=!!cfg.studentChoice;
+  countSentences();
+}
+function countSentences(){
+  const list=$('#tSentences').value.split(/\n+/).map(normSentence).filter(Boolean),c={short:0,medium:0,long:0};
+  list.forEach(s=>c[bandOf(s.length)]++);
+  const low=Object.keys(c).filter(k=>c[k]<3);
+  $('#tCount').textContent='Frasi: '+list.length+' · brevi '+c.short+' · medie '+c.medium+' · lunghe '+c.long+(low.length?'. Per le fasce con meno di 3 frasi uso quelle della fascia più vicina.':'.');
+}
+function showPanel(){fillTeacherForm();renderLog();$('#tStatus').textContent='';$('#tGate').hidden=true;$('#tPanel').hidden=false;show('screen-teacher');updateDlButtons();}
+function readTeacherForm(){
+  const sents=Array.from(new Set($('#tSentences').value.split(/\n+/).map(normSentence).filter(Boolean)));
+  const words=Array.from(new Set($('#tWords').value.split(/[\s,;]+/).map(x=>fold(x).replace(/[^a-z]/g,'')).filter(Boolean)));
+  return {sentences:sents,words:words,observer:$('#tObserver').value.trim(),studentChoice:$('#tChoice').checked,
+    defaults:{path:$('#tPath').value,startLevel:+$('#tStart').value||1,speed:$('#tSpeed').value,secs:+$('#tSecs').value||60,upper:$('#tUpper').checked,sound:$('#tSound').checked,punct:$('#tPunct').checked}};
+}
+async function saveCfg(publish,quiet){
+  const st=quiet?null:$('#tStatus');
+  if(!quiet){
+    const f=readTeacherForm();
+    if(f.sentences.length<3){st.className='status bad';st.textContent='Servono almeno 3 frasi.';return;}
+    if(f.words.length<10){st.className='status bad';st.textContent='Servono almeno 10 parole.';return;}
+    cfg.sentences=f.sentences;cfg.words=f.words;cfg.observer=f.observer;cfg.studentChoice=f.studentChoice;cfg.defaults=f.defaults;
+  }
+  cfg.updated=Date.now();lsSet(LS_CFG,JSON.stringify(cfg));applyCfgToStudentForm();
+  if(!publish){if(st){st.className='status';st.textContent='Salvato su questo computer.';}return;}
+  const msgTo=quiet?$('#gateMsg'):st;
+  if(!artifactCap){msgTo.className=quiet?'msg':'status bad';msgTo.textContent='Salvato solo su questo computer: da qui non posso pubblicare per la classe. Usa Esporta per portare la configurazione altrove.';return;}
+  try{
+    await artifactCap.publish({'config.json':JSON.stringify(cfg,null,1)});
+    if(st){st.className='status';st.textContent='Pubblicato: la classe vedrà queste frasi e queste impostazioni.';}
+  }catch(err){
+    const c=err&&err.code;
+    const t=c==='conflict'?'Qualcun altro ha pubblicato nel frattempo: la pagina si ricarica con l\'ultima versione. Riapri l\'area insegnante e ripeti la modifica.':(c==='not_writer'||c==='not_granted'||c==='capability_disabled')?'Salvato solo su questo computer: questo account non può pubblicare per la classe. Usa Esporta per portare la configurazione altrove.':'Salvato su questo computer, ma la pubblicazione non è riuscita. Riprova tra poco.';
+    if(msgTo){msgTo.className=quiet?'msg':'status bad';msgTo.textContent=t;}
+  }
+}
+function importCfg(file){
+  const st=$('#tStatus'),fr=new FileReader();
+  fr.onload=()=>{
+    try{
+      const c=mergeCfg(JSON.parse(fr.result));
+      const keepPin=cfg.pinHash;cfg=Object.assign(c,{pinHash:c.pinHash||keepPin});
+      fillTeacherForm();st.className='status';st.textContent='Configurazione caricata. Premi "Salva e pubblica" per renderla attiva.';
+    }catch(e){st.className='status bad';st.textContent='Il file non è una configurazione valida.';}
+  };
+  fr.readAsText(file);
+}
+
+/* ================= Inizializzazione ================= */
+function init(){
+  loadColors();
+  [$('#startLevel'),$('#tStart')].forEach(sel=>{PLANETS.forEach((p,i)=>{const o=document.createElement('option');o.value=i+1;o.textContent=(i+1)+' · '+p.short;sel.appendChild(o);});});
+  $('#data').value=todayIso();
+  $('#form').addEventListener('submit',onSubmit);
+  window.addEventListener('keydown',onKeyDown);
+  window.addEventListener('keyup',onKeyUp);
+  window.addEventListener('resize',()=>{if(!$('#screen-game').hidden)resize();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
+  window.addEventListener('blur',pause);
+  $('#btnPause').onclick=()=>{if(state==='playing')pause();else if(state==='paused'&&$('#ovGo'))resume();};
+  $('#btnNote').onclick=openNote;
+  $('#btnEnd').onclick=finishSession;
+  $('#btnTeacher').onclick=()=>{if(state==='playing')pause();openTeacher('panel');};
+  $('#gateOk').onclick=gateSubmit;
+  $('#pinIn').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();gateSubmit();}});
+  $('#gateCancel').onclick=()=>{show(L&&state==='paused'?'screen-game':'screen-setup');};
+  $('#tLock').onclick=()=>{teacherOK=false;show('screen-setup');};
+  $('#tTest').onclick=()=>{keepUnlock=true;if(!$('#nome').value)$('#nome').value='Prova';if(!$('#cognome').value)$('#cognome').value='Insegnante';show('screen-setup');};
+  $('#tSentences').addEventListener('input',countSentences);
+  $('#tResetS').onclick=()=>{$('#tSentences').value=SENTENCES.join('\n');countSentences();};
+  $('#tResetW').onclick=()=>{$('#tWords').value=WORDS.join(' ');};
+  $('#tSave').onclick=()=>saveCfg(true,false);
+  $('#tExport').onclick=()=>{const f=readTeacherForm();const out=Object.assign({},cfg,{sentences:f.sentences,words:f.words,observer:f.observer,studentChoice:f.studentChoice,defaults:f.defaults,updated:Date.now()});saveFile('Missione_Tastiera_configurazione.json',JSON.stringify(out,null,1),$('#tStatus'));};
+  $('#tImport').onclick=()=>$('#tFile').click();
+  $('#tFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)importCfg(f);e.target.value='';};
+  $('#tPinSave').onclick=async()=>{
+    const p=$('#tPin').value.trim(),st=$('#tPinStatus');
+    if(!/^\d{4,12}$/.test(p)){st.className='status bad';st.textContent='Il PIN deve avere da 4 a 12 cifre.';return;}
+    cfg.pinHash=await sha(p);$('#tPin').value='';await saveCfg(true,true);st.className='status';st.textContent='PIN cambiato.';
+  };
+  $('#btnLogCsv').onclick=()=>saveFile('Registro_Missione_Tastiera_'+todayIso()+'.csv',csvLevels(loadLog()),$('#logStatus'));
+  let armed=false;const clr=$('#btnLogClear');
+  clr.onclick=()=>{
+    if(!armed){armed=true;clr.textContent='Conferma: cancella tutto';setTimeout(()=>{armed=false;clr.textContent='Svuota il registro';},4000);return;}
+    armed=false;lsSet(LS_LOG,'[]');clr.textContent='Svuota il registro';renderLog();
+  };
+  $('#endReport').onclick=()=>openTeacher('report');
+  $('#endCont').onclick=()=>{const n=nextLevelFor(session);if(n)enterGame(n);};
+  $('#endNew').onclick=()=>{show('screen-setup');state='setup';};
+  $('#btnCont').onclick=()=>{const n=nextLevelFor(session);if(n){teacherOK=false;enterGame(n);}};
+  $('#btnBackT').onclick=()=>showPanel();
+  $('#btnNew').onclick=()=>{teacherOK=false;show('screen-setup');state='setup';};
+  const base=()=>slug(session.student.cognome)+'_'+slug(session.student.nome)+'_'+session.student.data;
+  $('#btnDocx').onclick=()=>{const el=$('#repStatus');try{saveFile('Report_Missione_Tastiera_'+base()+'.docx',buildDocx(session),el);}catch(e){el.className='status bad';el.textContent='Non sono riuscito a creare il file Word. Usa "Copia il testo".';}};
+  $('#btnCsv').onclick=()=>saveFile('Dati_per_livello_'+base()+'.csv',csvLevels([session]),$('#repStatus'));
+  $('#btnKeys').onclick=()=>saveFile('Tasti_premuti_'+base()+'.csv',csvKeys(session),$('#repStatus'));
+  $('#btnCopy').onclick=()=>{
+    const ta=$('#repText'),st=$('#repStatus');
+    const fb=()=>{const d=ta.closest('details');if(d)d.open=true;ta.focus();ta.select();st.className='status';st.textContent='Testo selezionato: premi Ctrl+C per copiarlo.';};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(()=>{st.className='status';st.textContent='Testo copiato. Ora puoi incollarlo in una mail o in un documento.';},fb);}else fb();
+  };
+  resolveCaps();loadConfig();
+}
+init();
+})();
+</script>
+
+</body></html>
