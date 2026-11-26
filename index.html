@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impariamo le parole</title>
+<style>
+  :root{
+    --bg:#fffdf5; --ink:#1d2433; --muted:#566074; --card:#ffffff; --line:#d9dce5;
+    --brand:#2563eb; --brand-ink:#ffffff; --ok:#15803d; --bad:#b91c1c; --warn:#b45309;
+    --soft:#eef3ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Verdana",system-ui,sans-serif;font-size:20px;line-height:1.5}
+  header{background:var(--brand);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{margin:0;font-size:1.3rem;letter-spacing:.03em}
+  main{max-width:1000px;margin:0 auto;padding:20px 16px 60px}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:22px;margin-bottom:18px}
+  h2{margin:.2em 0 .5em;font-size:1.5rem}
+  h3{margin:.2em 0 .4em;font-size:1.2rem}
+  .caps{text-transform:uppercase;letter-spacing:.06em}
+  .muted{color:var(--muted);font-size:.85em}
+  button,.btn{font:inherit;cursor:pointer;border:none;border-radius:14px;padding:14px 22px;background:var(--brand);color:var(--brand-ink);font-weight:700;min-height:56px}
+  button:hover{filter:brightness(1.08)}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:4px solid #f59e0b;outline-offset:2px}
+  button.alt{background:#fff;color:var(--brand);border:2px solid var(--brand)}
+  button.ok{background:var(--ok)} button.bad{background:var(--bad)} button.gray{background:#64748b}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .big{font-size:1.25rem;padding:20px 30px;min-height:72px}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:700px){.grid2{grid-template-columns:1fr}}
+  label{display:block;font-weight:700;margin:12px 0 4px}
+  input[type=text],input[type=password],input[type=number],select{font:inherit;width:100%;padding:14px;border:2px solid var(--line);border-radius:12px;background:#fff}
+  input[type=number]{max-width:140px}
+  input[type=checkbox],input[type=radio]{width:24px;height:24px;vertical-align:middle;margin-right:8px}
+  .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .tab{background:#fff;color:var(--ink);border:3px solid var(--line);flex:1;min-width:140px}
+  .tab.active{border-color:var(--brand);background:var(--soft)}
+  .tab.done{border-color:var(--ok)}
+  .tab:disabled{background:#eceff4}
+  .frame-wrap{position:relative;border:3px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+  iframe{width:100%;height:620px;border:0;display:block}
+  .placeholder{padding:40px 20px;text-align:center;color:var(--bad);font-weight:700}
+  .overlay{position:absolute;inset:0;background:rgba(255,255,255,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px}
+  .timer{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .timer.low{color:var(--bad)}
+  .bar{height:14px;background:#e5e7eb;border-radius:8px;overflow:hidden;min-width:160px;flex:1}
+  .bar>span{display:block;height:100%;background:var(--brand);transition:width .5s}
+  .tag{display:inline-block;padding:4px 12px;border-radius:999px;font-size:.8em;font-weight:700;background:var(--soft);color:var(--brand)}
+  .tag.ok{background:#dcfce7;color:var(--ok)} .tag.bad{background:#fee2e2;color:var(--bad)} .tag.warn{background:#fef3c7;color:var(--warn)}
+  table{border-collapse:collapse;width:100%;font-size:.8em}
+  th,td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
+  th{background:var(--soft)}
+  .notice{background:#fff7e6;border:2px solid #f5c26b;border-radius:12px;padding:12px 16px;font-size:.85em}
+  .hidden{display:none!important}
+  .speak{background:#fff;color:var(--brand);border:2px solid var(--brand);padding:6px 14px;min-height:44px;border-radius:999px}
+  @media print{header,.tabs,.noprint{display:none!important} body{font-size:12pt} .card{border:1px solid #999}}
+</style>
+</head>
+<body>
+<header>
+  <h1>📖 IMPARIAMO LE PAROLE</h1>
+  <div class="row noprint" id="hdrBtns"></div>
+</header>
+<main id="app"></main>
+
+<script>
+/* =====================================================================
+   CONFIGURAZIONE  (modificare solo questa parte)
+   ===================================================================== */
+
+// Password dell'area docente (cambiarla e comunicarla al docente)
+const PASSWORD_DOCENTE = "TIC_2026";
+
+// Per ogni app: in "id" ci sono i link di LearningApps (accetta anche
+// solo il numero, oppure l'intero codice di incorporamento).
+const APPS = [
+  {
+    id: "https://learningapps.org/watch?v=pv8msmq2j26",
+    titolo: "Trova le coppie",
+    tipo: "Memory (immagine – parola)",
+    icona: "🃏",
+    consegna: "GIRA LE CARTE. TROVA L'IMMAGINE E LA PAROLA UGUALE.",
+    primari: "Riconoscere globalmente la parola scritta associandola alla sua immagine (lettura di parole familiari).",
+    secondari: "Memoria visiva, attenzione sostenuta, discriminazione visiva delle lettere."
+  },
+  {
+    id: "https://learningapps.org/watch?v=pyguh36e326",
+    titolo: "Con che lettera inizia?",
+    tipo: "Ordina le coppie (immagine – lettera iniziale)",
+    icona: "🔤",
+    consegna: "TRASCINA OGNI IMMAGINE SULLA LETTERA CON CUI COMINCIA.",
+    primari: "Consapevolezza fonologica: collegare il suono iniziale di una parola alla lettera corrispondente.",
+    secondari: "Riconoscimento e discriminazione delle lettere maiuscole; ascolto attento."
+  },
+  {
+    id: "https://learningapps.org/watch?v=psv0et09j26",
+    titolo: "Scrivi la parola",
+    tipo: "Cruciverba con immagini",
+    icona: "✏️",
+    consegna: "GUARDA L'IMMAGINE E SCRIVI LA PAROLA, UNA LETTERA ALLA VOLTA.",
+    primari: "Scrivere la parola corretta a partire dall'immagine, associando ogni suono alla lettera giusta.",
+    secondari: "Ortografia di parole piane, orientamento visuospaziale nella griglia, autonomia."
+  }
+];
+
+/* =====================================================================
+   STATO
+   ===================================================================== */
+const SKEY = "la_settings_v1", SESSKEY = "la_session_v1";
+let settings = { timers: [0,0,0], confermaDocente: false };
+let session = null;      // { alunno:{nome,cognome,classe}, apps:[...], corrente:0 }
+let view = "home";
+let teacherOk = false;
+let tickHandle = null;
+let flash = "";
+
+try { const s = localStorage.getItem(SKEY); if (s) settings = Object.assign(settings, JSON.parse(s)); } catch(e){}
+try { const s = sessionStorage.getItem(SESSKEY); if (s) { session = JSON.parse(s); session.apps.forEach(a=>a.running=false); view = session.finito ? "report" : "scheda"; } } catch(e){}
+
+function saveSettings(){ try{ localStorage.setItem(SKEY, JSON.stringify(settings)); }catch(e){} }
+function saveSession(){ try{ sessionStorage.setItem(SESSKEY, JSON.stringify(session)); }catch(e){} }
+
+function newSession(alunno){
+  return { alunno, corrente:0, finito:false,
+    apps: APPS.map(()=>({ started:false, running:false, elapsed:0, totale:0, ripartenze:0, inizio:null, fine:null, esito:null })) };
+}
+
+/* =====================================================================
+   UTILITÀ
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtTime = sec => String(Math.floor(sec/60)).padStart(2,'0') + ":" + String(sec%60).padStart(2,'0');
+const fmtDate = iso => iso ? new Date(iso).toLocaleString("it-IT") : "—";
+const ESITI = { superato:["✅ Superato","ok"], non_superato:["❌ Non superato","bad"], scaduto:["⏰ Tempo scaduto","warn"] };
+
+function embedSrc(v){
+  v = (v||"").trim(); if(!v) return "";
+  const m1 = v.match(/src=["']([^"']+)["']/); if (m1) v = m1[1];
+  if (/^\d+$/.test(v)) return "https://learningapps.org/watch?app=" + v;
+  const m2 = v.match(/[?&]app=(\d+)/); if (m2) return "https://learningapps.org/watch?app=" + m2[1];
+  return /^https?:\/\//.test(v) ? v : "";
+}
+function speak(text){
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.toLowerCase()); u.lang = "it-IT"; u.rate = .85;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function isUnlocked(i){
+  for (let k=0;k<i;k++) if (session.apps[k].esito !== "superato") return false;
+  return true;
+}
+
+/* =====================================================================
+   NAVIGAZIONE
+   ===================================================================== */
+function go(v, idx){ view = v; if (idx!==undefined) session.corrente = idx; if(session) saveSession(); render(); }
+
+function render(){
+  const hb = $("#hdrBtns");
+  hb.innerHTML = "";
+  if (view !== "home") hb.innerHTML = `<button class="alt" onclick="goHome()">🏠 Inizio</button>`;
+  if (view==="home") renderHome();
+  else if (view==="docente") renderDocente();
+  else if (view==="form") renderForm();
+  else if (view==="scheda") renderScheda();
+  else if (view==="report") renderReport();
+}
+function goHome(){
+  if (session && !session.finito && session.apps.some(a=>a.running)) pauseAll();
+  view="home"; render();
+}
+function pauseAll(){ if(session){ session.apps.forEach(a=>a.running=false); saveSession(); } }
+
+/* =====================================================================
+   HOME
+   ===================================================================== */
+function renderHome(){
+  const cont = session && !session.finito
+    ? `<button class="big ok" onclick="go('scheda')">▶ CONTINUA (${esc(session.alunno.nome)})</button>` : "";
+  $("#app").innerHTML = `
+    <div class="card" style="text-align:center">
+      <h2 class="caps">Ciao! Cosa vuoi fare?</h2>
+      <div class="row" style="justify-content:center;margin-top:18px">
+        ${cont}
+        <button class="big" onclick="startAlunno()">🧒 AREA ALUNNO</button>
+        <button class="big alt" onclick="go('docente')">🔒 AREA DOCENTE</button>
+      </div>
+    </div>`;
+}
+function startAlunno(){ session = null; try{sessionStorage.removeItem(SESSKEY);}catch(e){} go('form'); }
+
+/* =====================================================================
+   AREA DOCENTE
+   ===================================================================== */
+function renderDocente(){
+  if (!teacherOk){
+    $("#app").innerHTML = `
+      <div class="card" style="max-width:520px;margin:auto">
+        <h2>🔒 Area docente</h2>
+        <label for="pw">Password</label>
+        <input type="password" id="pw" autocomplete="off">
+        <p id="pwErr" class="hidden" style="color:var(--bad);font-weight:700">Password errata.</p>
+        <div class="row" style="margin-top:14px"><button id="pwOk">Entra</button><button class="alt" onclick="goHome()">Annulla</button></div>
+      </div>`;
+    const tryLogin = () => {
+      if ($("#pw").value === PASSWORD_DOCENTE){ teacherOk = true; renderDocente(); }
+      else $("#pwErr").classList.remove("hidden");
+    };
+    $("#pwOk").onclick = tryLogin;
+    $("#pw").addEventListener("keydown", e=>{ if(e.key==="Enter") tryLogin(); });
+    $("#pw").focus();
+    return;
+  }
+  const timerRows = APPS.map((a,i)=>`
+    <div class="row" style="margin:8px 0">
+      <span style="flex:1;min-width:220px"><b>${a.icona} App ${i+1}</b> – ${esc(a.titolo)}</span>
+      <input type="number" min="0" max="120" id="t${i}" value="${settings.timers[i]||0}" aria-label="Timer app ${i+1}"> <span>minuti</span>
+    </div>`).join("");
+  $("#app").innerHTML = `
+    <div class="card">
+      <h2>⚙️ Impostazioni docente</h2>
+      <div class="notice">Gli esercizi vanno svolti in ordine, dal primo al terzo: si passa al successivo solo se il precedente è completato.</div>
+      <h3 style="margin-top:22px">Timer per ogni esercizio</h3>
+      <p class="muted">Inserire 0 per togliere il timer. Se il tempo scade, l'esercizio ricomincia da capo (la durata totale e il numero di ripartenze restano nel report).</p>
+      ${timerRows}
+      <h3 style="margin-top:22px">Conferma dell'esito</h3>
+      <label><input type="checkbox" id="conf" ${settings.confermaDocente?"checked":""}> L'esito «Superato / Non superato» deve essere confermato con la password del docente</label>
+      <div class="notice" style="margin-top:16px">LearningApps non comunica automaticamente il risultato a questa pagina: a fine esercizio l'alunno preme «HO FINITO» e indica se ha risolto correttamente. Con l'opzione qui sopra attiva, l'esito deve essere confermato dal docente con la password.</div>
+      <div class="row" style="margin-top:18px"><button id="saveSet" class="ok">💾 Salva impostazioni</button><button class="alt" onclick="teacherOk=false;goHome()">Esci</button></div>
+      <p id="saved" class="hidden" style="color:var(--ok);font-weight:700">Impostazioni salvate ✔ (valide su questo dispositivo)</p>
+    </div>
+    <div class="card">
+      <h3>Stato dei collegamenti LearningApps</h3>
+      ${APPS.map((a,i)=>`<p>${a.icona} App ${i+1}: ${embedSrc(a.id) ? '<span class="tag ok">collegata</span>' : '<span class="tag bad">ID mancante nel file</span>'}</p>`).join("")}
+    </div>`;
+  $("#saveSet").onclick = () => {
+    settings.timers = APPS.map((_,i)=> Math.max(0, parseInt($("#t"+i).value,10)||0));
+    settings.confermaDocente = $("#conf").checked;
+    saveSettings(); $("#saved").classList.remove("hidden");
+  };
+}
+
+/* =====================================================================
+   AREA ALUNNO – DATI
+   ===================================================================== */
+function renderForm(){
+  $("#app").innerHTML = `
+    <div class="card" style="max-width:620px;margin:auto">
+      <h2 class="caps">Chi sei?</h2>
+      <label for="nome">Nome</label><input type="text" id="nome" autocomplete="off">
+      <label for="cogn">Cognome</label><input type="text" id="cogn" autocomplete="off">
+      <label for="cl">Classe</label><input type="text" id="cl" placeholder="es. 2A" autocomplete="off">
+      <p id="fErr" class="hidden" style="color:var(--bad);font-weight:700">Scrivi nome, cognome e classe.</p>
+      <div class="row" style="margin-top:16px"><button class="big ok" id="fOk">INIZIAMO ▶</button></div>
+    </div>`;
+  $("#fOk").onclick = () => {
+    const nome=$("#nome").value.trim(), cognome=$("#cogn").value.trim(), classe=$("#cl").value.trim();
+    if(!nome||!cognome||!classe){ $("#fErr").classList.remove("hidden"); return; }
+    session = newSession({nome,cognome,classe});
+    const first = APPS.findIndex((_,i)=>isUnlocked(i)); session.corrente = Math.max(0,first);
+    go('scheda');
+  };
+  $("#nome").focus();
+}
+
+/* =====================================================================
+   SCHEDE
+   ===================================================================== */
+function tabsHtml(){
+  const t = APPS.map((a,i)=>{
+    const st = session.apps[i], locked = !isUnlocked(i);
+    const cls = "tab" + (view==="scheda"&&session.corrente===i?" active":"") + (st.esito==="superato"?" done":"");
+    return `<button class="${cls}" ${locked?"disabled":""} onclick="switchTo(${i})">${locked?"🔒":a.icona} ${i+1}${st.esito==="superato"?" ✅":""}</button>`;
+  }).join("");
+  const allDone = session.apps.every(a=>a.esito==="superato");
+  return `<div class="tabs noprint">${t}<button class="tab ${view==='report'?'active':''}" ${allDone?"":"disabled"} onclick="goReport()">${allDone?"📋":"🔒"} REPORT</button></div>`;
+}
+function switchTo(i){ pauseAll(); go('scheda', i); }
+function goReport(){ pauseAll(); go('report'); }
+
+function renderScheda(){
+  if(!session){ go('home'); return; }
+  const i = session.corrente, a = APPS[i], st = session.apps[i], limit = settings.timers[i]||0;
+  const src = embedSrc(a.id);
+  if (st.started && !st.esito) st.running = true;   // riprende dopo cambio scheda / ricarica
+  let body;
+  if (!st.started){
+    body = `<div class="overlay" style="position:static;padding:50px 20px">
+      <div style="font-size:4rem">${a.icona}</div>
+      <h2 class="caps">${esc(a.consegna)}</h2>
+      <button class="speak" onclick="speak(APPS[${i}].consegna)">🔊 ASCOLTA</button>
+      ${limit?`<p class="muted">Hai ${limit} minuti.</p>`:""}
+      <button class="big ok" onclick="startApp(${i})">▶ INIZIA</button></div>`;
+  } else {
+    const frame = src
+      ? `<iframe title="${esc(a.titolo)}" src="${esc(src)}" allowfullscreen></iframe>`
+      : `<div class="placeholder">⚠ Manca il collegamento a LearningApps per questa app.<br>(Inserire l'ID nella configurazione del file.)</div>`;
+    const blocked = st.esito ? `<div class="overlay noprint">${overlayEsito(i)}</div>` : "";
+    body = `<div class="row noprint" style="margin-bottom:10px">
+        <span class="timer" id="tmr"></span>
+        ${limit?`<div class="bar"><span id="bar"></span></div>`:""}
+        <button class="speak" onclick="speak(APPS[${i}].consegna)">🔊</button>
+        <span style="flex:1"></span>
+        <button class="ok" ${st.esito?"disabled":""} onclick="askEsito(${i})">✔ HO FINITO</button>
+      </div>
+      <div class="frame-wrap">${frame}${blocked}</div>`;
+  }
+  const fl = flash ? `<div class="notice" style="background:#fee2e2;border-color:#b91c1c;font-weight:700;font-size:1rem;margin-bottom:12px">${flash}</div>` : "";
+  flash = "";
+  $("#app").innerHTML = `${tabsHtml()}
+    <div class="card"><h2>${a.icona} ${i+1}. ${esc(a.titolo)}</h2>${fl}${body}</div>`;
+  startTick(); updateTimer();
+}
+
+function overlayEsito(i){
+  const st = session.apps[i];
+  const [lab] = ESITI[st.esito];
+  const nxt = i < APPS.length-1 && isUnlocked(i+1)
+      ? `<button class="big" onclick="switchTo(${i+1})">VAI ALLA SCHEDA ${i+2} ▶</button>`
+      : (i === APPS.length-1 ? `<button class="big" onclick="goReport()">VAI AL REPORT ▶</button>` : "");
+  return `<h2>${lab}</h2>
+    <div class="row" style="justify-content:center">
+      ${st.esito!=="superato"?`<button class="alt" onclick="retry(${i})">↻ RIPROVA</button>`:""}
+      ${nxt}
+    </div>`;
+}
+
+function startApp(i){
+  const st = session.apps[i];
+  st.started = true; st.running = true; if(!st.inizio) st.inizio = new Date().toISOString();
+  saveSession(); renderScheda();
+}
+function retry(i){ const st = session.apps[i]; st.esito=null; st.fine=null; st.running=true; saveSession(); renderScheda(); }
+
+function askEsito(i){
+  const st = session.apps[i]; st.running = false;
+  const wrap = document.querySelector(".frame-wrap");
+  const ov = document.createElement("div");
+  ov.className = "overlay";
+  ov.innerHTML = `<h2 class="caps">Hai fatto tutto giusto?</h2>
+    ${settings.confermaDocente?'<p class="muted">Chiedi al docente di confermare.</p>':""}
+    <div class="row" style="justify-content:center">
+      <button class="big ok" onclick="setEsito(${i},'superato')">👍 SÌ</button>
+      <button class="big bad" onclick="setEsito(${i},'non_superato')">👎 NO</button>
+      <button class="big gray" onclick="cancelAsk(${i})">↩ TORNA</button>
+    </div>`;
+  wrap.appendChild(ov);
+}
+function cancelAsk(i){ session.apps[i].running = true; saveSession(); renderScheda(); }
+
+function setEsito(i, esito){
+  if (settings.confermaDocente){
+    const p = prompt("Password del docente per confermare l'esito:");
+    if (p !== PASSWORD_DOCENTE){ alert("Password errata."); return; }
+  }
+  const st = session.apps[i];
+  st.esito = esito; st.running = false; st.fine = new Date().toISOString();
+  saveSession(); renderScheda();
+}
+
+/* ---------- timer ---------- */
+function startTick(){ if(!tickHandle) tickHandle = setInterval(tick, 1000); }
+function tick(){
+  if(!session || view!=="scheda") return;
+  const i = session.corrente, st = session.apps[i];
+  if (!st.running) return;
+  st.elapsed++; st.totale++;
+  const limit = (settings.timers[i]||0)*60;
+  if (limit && st.elapsed >= limit){
+    st.elapsed = 0; st.ripartenze++; flash = "⏰ TEMPO SCADUTO! L'ESERCIZIO RICOMINCIA.";
+    saveSession(); renderScheda(); return;
+  }
+  if (st.elapsed % 5 === 0) saveSession();
+  updateTimer();
+}
+function updateTimer(){
+  if(!session || view!=="scheda") return;
+  const i = session.corrente, st = session.apps[i], limit=(settings.timers[i]||0)*60;
+  const t = $("#tmr"); if(!t) return;
+  if (limit){
+    const left = Math.max(0, limit - st.elapsed);
+    t.textContent = "⏱ " + fmtTime(left);
+    t.classList.toggle("low", left <= 30);
+    const b = $("#bar"); if(b) b.style.width = (left/limit*100) + "%";
+  } else t.textContent = "⏱ " + fmtTime(st.elapsed);
+}
+
+/* =====================================================================
+   REPORT
+   ===================================================================== */
+/* ---------- generatore PDF minimale (nessuna libreria esterna) ---------- */
+function pdfSafe(t){
+  return String(t).replace(/[–—]/g,"-").replace(/[’‘]/g,"'").replace(/[«»“”]/g,'"').replace(/[^\x20-\xFF]/g,"?");
+}
+function pdfWrap(text, size, maxW){
+  const maxChars = Math.floor(maxW / (size*0.53)), out = [];
+  String(text).split("\n").forEach(par=>{
+    let line = "";
+    par.split(/\s+/).forEach(w=>{
+      if ((line+" "+w).trim().length > maxChars){ if(line) out.push(line); line = w; }
+      else line = (line+" "+w).trim();
+    });
+    out.push(line);
+  });
+  return out;
+}
+function buildPdf(items){           // items: {t, size, bold, gap, indent}
+  const W=595, H=842, M=50, pages=[]; let cur=[], y=H-M;
+  const newPage = ()=>{ pages.push(cur); cur=[]; y=H-M; };
+  items.forEach(it=>{
+    const size = it.size||11, lead = size*1.35;
+    pdfWrap(pdfSafe(it.t), size, W-2*M-(it.indent||0)).forEach(l=>{
+      if (y-lead < M) newPage();
+      y -= lead;
+      cur.push(`BT /${it.bold?"F2":"F1"} ${size} Tf ${M+(it.indent||0)} ${y.toFixed(1)} Td (${l.replace(/[\\()]/g,"\\$&")}) Tj ET`);
+    });
+    y -= (it.gap||0);
+  });
+  pages.push(cur);
+  const objs = [];                  // 1 catalog, 2 pages, 3 F1, 4 F2, poi coppie pagina/contenuto
+  const kids = pages.map((_,k)=>5+2*k);
+  objs[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+  objs[2] = `<< /Type /Pages /Kids [${kids.map(k=>k+" 0 R").join(" ")}] /Count ${pages.length} >>`;
+  objs[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>";
+  objs[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>";
+  pages.forEach((p,k)=>{
+    const content = p.join("\n");
+    objs[5+2*k] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${6+2*k} 0 R >>`;
+    objs[6+2*k] = `<< /Length ${content.length} >>\nstream\n${content}\nendstream`;
+  });
+  let pdf = "%PDF-1.4\n", offs = [];
+  for (let n=1;n<objs.length;n++){ offs[n]=pdf.length; pdf += `${n} 0 obj\n${objs[n]}\nendobj\n`; }
+  const xref = pdf.length;
+  pdf += `xref\n0 ${objs.length}\n0000000000 65535 f \n` + offs.slice(1).map(o=>String(o).padStart(10,"0")+" 00000 n \n").join("");
+  pdf += `trailer\n<< /Size ${objs.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  const bytes = new Uint8Array(pdf.length); for (let i=0;i<pdf.length;i++) bytes[i]=pdf.charCodeAt(i)&255;
+  return new Blob([bytes], {type:"application/pdf"});
+}
+function esitoLabel(e){ return e ? ESITI[e][0].replace(/^\S+\s/,"") : "Non svolto"; }
+function downloadPdf(){
+  const al = session.alunno, now = new Date();
+  const done = session.apps.filter(s=>s.esito==="superato").length;
+  const tot = session.apps.reduce((n,s)=>n+s.totale,0);
+  const it = [
+    {t:"REPORT ESERCITAZIONE LEARNINGAPPS", size:18, bold:true, gap:10},
+    {t:"Alunno: "+al.nome+" "+al.cognome, size:12, bold:true},
+    {t:"Classe: "+al.classe, size:12},
+    {t:"Data di svolgimento: "+fmtDate(session.apps[0].inizio), size:12},
+    {t:"Data report: "+now.toLocaleString("it-IT"), size:12, gap:6},
+    {t:"Esercizi superati: "+done+" su "+APPS.length+"   -   Tempo totale: "+fmtTime(tot), size:12, bold:true, gap:14}
+  ];
+  APPS.forEach((a,i)=>{
+    const s = session.apps[i], lim = settings.timers[i];
+    it.push({t:(i+1)+". "+a.titolo+" ("+a.tipo+")", size:12, bold:true, gap:2});
+    it.push({t:"Obiettivi primari: "+a.primari, indent:14});
+    it.push({t:"Obiettivi secondari: "+a.secondari, indent:14});
+    it.push({t:"Inizio: "+fmtDate(s.inizio)+"   Fine: "+fmtDate(s.fine), indent:14});
+    it.push({t:"Durata totale: "+(s.started?fmtTime(s.totale):"-")+(lim?"   (limite "+lim+" min; ripartenze per tempo scaduto: "+s.ripartenze+")":"   (senza timer)"), indent:14});
+    it.push({t:"Obiettivi superati: "+esitoLabel(s.esito), bold:true, indent:14, gap:12});
+  });
+  it.push({t:"Nota: l'esito di ogni esercizio e' stato indicato a fine esercizio, perche' LearningApps non lo comunica automaticamente alla pagina.", size:9});
+  const blob = buildPdf(it);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = ("Report_"+al.cognome+"_"+al.nome+".pdf").replace(/[^\w.-]+/g,"_");
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+
+function renderReport(){
+  if(!session){ go('home'); return; }
+  const al = session.alunno;
+  const done = session.apps.filter(s=>s.esito==="superato").length;
+  const tot = session.apps.reduce((n,s)=>n+s.totale,0);
+  const rows = APPS.map((a,i)=>{
+    const s = session.apps[i];
+    const e = s.esito ? `<span class="tag ${ESITI[s.esito][1]}">${ESITI[s.esito][0]}</span>` : `<span class="tag">— Non svolto</span>`;
+    return `<tr>
+      <td><b>${i+1}. ${esc(a.titolo)}</b><br><span class="muted">${esc(a.tipo)}</span></td>
+      <td><b>Primari:</b> ${esc(a.primari)}<br><b>Secondari:</b> ${esc(a.secondari)}</td>
+      <td>${fmtDate(s.inizio)}</td>
+      <td>${s.started?fmtTime(s.totale):"—"}${settings.timers[i]?`<br><span class="muted">limite ${settings.timers[i]} min<br>ripartenze: ${s.ripartenze}</span>`:""}</td>
+      <td>${e}</td></tr>`;
+  }).join("");
+  $("#app").innerHTML = `${tabsHtml()}
+    <div class="card">
+      <h2>📋 Report</h2>
+      <p><b>Alunno:</b> ${esc(al.nome)} ${esc(al.cognome)} &nbsp;|&nbsp; <b>Classe:</b> ${esc(al.classe)}<br>
+         <b>Data di svolgimento:</b> ${fmtDate(session.apps[0].inizio)}<br>
+         <b>Esercizi superati:</b> ${done} su ${APPS.length} &nbsp;|&nbsp; <b>Tempo totale:</b> ${fmtTime(tot)}</p>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Esercizio</th><th>Obiettivi</th><th>Data e ora</th><th>Durata</th><th>Obiettivi superati?</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+      <div class="row noprint" style="margin-top:18px">
+        <button class="big ok" onclick="downloadPdf()">📄 SCARICA REPORT PDF</button>
+        <button class="gray" onclick="if(confirm('Iniziare una nuova sessione? I dati attuali andranno persi.')) startAlunno()">↺ Nuova sessione</button>
+      </div>
+    </div>`;
+}
+
+let hiddenPause = false;
+document.addEventListener("visibilitychange", ()=>{
+  if(!session || view!=="scheda") return;
+  const st = session.apps[session.corrente];
+  if (document.hidden){ if(st.running){ st.running=false; hiddenPause=true; } }
+  else if (hiddenPause){ hiddenPause=false; if(st.started && !st.esito) st.running=true; }
+});
+render();
+</script>
+</body>
+</html>
